@@ -1,5 +1,7 @@
+import { motion } from "framer-motion"; // Pour les animations
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
+import { School, User, Info } from "lucide-react"; // Icônes
 
 interface ReviewFormProps {
   schoolInfo: {
@@ -79,109 +81,155 @@ export const ReviewForm = ({ schoolInfo, adminInfo, onPrev, onSubmit }: ReviewFo
     });
   };
 
+  // Animation pour les cartes
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+    hover: { scale: 1.02 },
+  };
+
+  // URL de l'image de profil (si elle existe)
+  const profilePhotoUrl = adminInfo.profilePhoto ? URL.createObjectURL(adminInfo.profilePhoto) : null;
+
   return (
-    <div className="space-y-6">
-      <h3 className="text-lg font-medium">Vérification des informations</h3>
-      <p className="text-sm text-gray-500">
-        Veuillez vérifier les informations ci-dessous avant de soumettre votre demande d'inscription.
-      </p>
-      
-      <div className="space-y-4">
-        <h4 className="font-medium">Informations de l'école</h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div>
-            <p className="text-gray-500">Nom de l'école</p>
-            <p className="font-medium">{schoolInfo.name}</p>
+    <div className="bg-white rounded-lg border border-gray-200 flex flex-col h-full">
+      {/* Contenu avec défilement */}
+      <div className="flex-1 p-6 max-h-[calc(80vh-80px)] overflow-auto space-y-6">
+        {/* Titre principal */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h3 className="text-3xl font-extrabold text-gray-900">
+            Vérification des informations
+          </h3>
+          <p className="mt-2 text-sm text-gray-500 font-medium">
+            Veuillez vérifier les informations ci-dessous avant de soumettre votre demande d'inscription.
+          </p>
+        </motion.div>
+
+        {/* Section : Informations de l'école */}
+        <motion.div
+          variants={cardVariants}
+          initial="hidden"
+          animate="visible"
+          whileHover="hover"
+          className="bg-gray-50 rounded-lg p-6 border border-gray-200 space-y-4"
+        >
+          <div className="flex items-center space-x-3">
+            <School className="w-6 h-6 text-gray-700" />
+            <h4 className="text-xl font-semibold text-gray-800">Informations de l'école</h4>
           </div>
-          <div>
-            <p className="text-gray-500">Adresse</p>
-            <p className="font-medium">{schoolInfo.address}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[
+              { label: "Nom de l'école", value: schoolInfo.name },
+              { label: "Adresse", value: schoolInfo.address },
+              { label: "Téléphone", value: schoolInfo.phone },
+              { label: "Email", value: schoolInfo.email },
+              { label: "Type d'école", value: formatSchoolType(schoolInfo.schoolType) },
+              { label: "Statut", value: formatStatus(schoolInfo.status) },
+              { label: "Boîte postale", value: schoolInfo.postalBox || "Non spécifié" },
+              { label: "Identifiant officiel", value: schoolInfo.officialId },
+              { label: "Langues d'enseignement", value: formatLanguages(schoolInfo.languages) },
+              { label: "Site web", value: schoolInfo.website || "Non spécifié" },
+            ].map((item, index) => (
+              <motion.div
+                key={index}
+                className="relative p-4 rounded-lg bg-white border border-gray-200 transition-all duration-300"
+                whileHover={{ scale: 1.03 }}
+              >
+                <p className="text-sm text-gray-500 font-medium">{item.label}</p>
+                <p className="text-base font-semibold text-gray-800">{item.value}</p>
+                <div className="absolute top-0 right-0 w-12 h-12 bg-gray-200 rounded-bl-full opacity-20" />
+              </motion.div>
+            ))}
           </div>
-          <div>
-            <p className="text-gray-500">Téléphone</p>
-            <p className="font-medium">{schoolInfo.phone}</p>
+        </motion.div>
+
+        {/* Séparateur */}
+        <Separator className="bg-gray-300 h-1 rounded-full" />
+
+        {/* Section : Informations de l'administrateur */}
+        <motion.div
+          variants={cardVariants}
+          initial="hidden"
+          animate="visible"
+          whileHover="hover"
+          className="bg-gray-50 rounded-lg p-6 border border-gray-200 space-y-4"
+        >
+          <div className="flex items-center space-x-3">
+            <User className="w-6 h-6 text-gray-700" />
+            <h4 className="text-xl font-semibold text-gray-800">Informations de l'administrateur</h4>
           </div>
-          <div>
-            <p className="text-gray-500">Email</p>
-            <p className="font-medium">{schoolInfo.email}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[
+              { label: "Nom complet", value: adminInfo.fullName },
+              { label: "Email", value: adminInfo.email },
+              { label: "Date de naissance", value: formatDate(adminInfo.dateOfBirth) },
+              { label: "Genre", value: formatGender(adminInfo.gender) },
+              { label: "Téléphone", value: adminInfo.phone },
+              { label: "Adresse", value: adminInfo.address },
+              // {
+              //   label: "Photo de profil",
+              //   value: profilePhotoUrl ? (
+              //     <img
+              //       src={profilePhotoUrl}
+              //       alt="Photo de profil"
+              //       className="w-18 h-18  object-cover border border-gray-300"
+              //     />
+              //   ) : (
+              //     <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-medium">
+              //       N/A
+              //     </div>
+              //   ),
+              // },
+            ].map((item, index) => (
+              <motion.div
+                key={index}
+                className="relative p-4 rounded-lg bg-white border border-gray-200 transition-all duration-300"
+                whileHover={{ scale: 1.03 }}
+              >
+                <p className="text-sm text-gray-500 font-medium">{item.label}</p>
+                {typeof item.value === "string" ? (
+                  <p className="text-base font-semibold text-gray-800">{item.value}</p>
+                ) : (
+                  <div className="mt-2">{item.value}</div>
+                )}
+                <div className="absolute top-0 right-0 w-12 h-12 bg-gray-200 rounded-bl-full opacity-20" />
+              </motion.div>
+            ))}
           </div>
-          <div>
-            <p className="text-gray-500">Type d'école</p>
-            <p className="font-medium">{formatSchoolType(schoolInfo.schoolType)}</p>
-          </div>
-          <div>
-            <p className="text-gray-500">Statut</p>
-            <p className="font-medium">{formatStatus(schoolInfo.status)}</p>
-          </div>
-          <div>
-            <p className="text-gray-500">Boîte postale</p>
-            <p className="font-medium">{schoolInfo.postalBox || "Non spécifié"}</p>
-          </div>
-          <div>
-            <p className="text-gray-500">Identifiant officiel</p>
-            <p className="font-medium">{schoolInfo.officialId}</p>
-          </div>
-          <div>
-            <p className="text-gray-500">Langues d'enseignement</p>
-            <p className="font-medium">{formatLanguages(schoolInfo.languages)}</p>
-          </div>
-          <div>
-            <p className="text-gray-500">Site web</p>
-            <p className="font-medium">{schoolInfo.website || "Non spécifié"}</p>
-          </div>
-        </div>
+        </motion.div>
+
+        {/* Note */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="bg-gray-100 p-4 rounded-lg flex items-start space-x-3"
+        >
+          <Info className="w-5 h-5 text-gray-600 mt-1" />
+          <p className="text-sm text-gray-700 font-medium">
+            <strong>Note :</strong> Après soumission, votre demande sera examinée par notre équipe. 
+            Vous recevrez un email de confirmation une fois votre compte validé.
+          </p>
+        </motion.div>
       </div>
-      
-      <Separator />
-      
-      <div className="space-y-4">
-        <h4 className="font-medium">Informations de l'administrateur</h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div>
-            <p className="text-gray-500">Nom complet</p>
-            <p className="font-medium">{adminInfo.fullName}</p>
-          </div>
-          <div>
-            <p className="text-gray-500">Email</p>
-            <p className="font-medium">{adminInfo.email}</p>
-          </div>
-          <div>
-            <p className="text-gray-500">Date de naissance</p>
-            <p className="font-medium">{formatDate(adminInfo.dateOfBirth)}</p>
-          </div>
-          <div>
-            <p className="text-gray-500">Genre</p>
-            <p className="font-medium">{formatGender(adminInfo.gender)}</p>
-          </div>
-          <div>
-            <p className="text-gray-500">Téléphone</p>
-            <p className="font-medium">{adminInfo.phone}</p>
-          </div>
-          <div>
-            <p className="text-gray-500">Adresse</p>
-            <p className="font-medium">{adminInfo.address}</p>
-          </div>
-          <div>
-            <p className="text-gray-500">Photo de profil</p>
-            <p className="font-medium">
-              {adminInfo.profilePhoto ? adminInfo.profilePhoto.name : "Non fournie"}
-            </p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="bg-blue-50 p-4 rounded-md">
-        <p className="text-sm text-blue-800">
-          <strong>Note:</strong> Après soumission, votre demande sera examinée par notre équipe. 
-          Vous recevrez un email de confirmation une fois votre compte validé.
-        </p>
-      </div>
-      
-      <div className="flex justify-between">
-        <Button variant="outline" onClick={onPrev}>
+
+      {/* Boutons fixes en bas */}
+      <div className="p-6 border-t border-gray-200 bg-white flex justify-between">
+        <Button
+          variant="outline"
+          onClick={onPrev}
+          className="border-2 border-gray-600 text-gray-600 font-semibold py-2 px-6 rounded-lg hover:bg-gray-100 transition-all duration-300"
+        >
           Précédent
         </Button>
-        <Button onClick={onSubmit}>
+        <Button
+          onClick={onSubmit}
+          className="bg-gray-800 text-white font-semibold py-2 px-6 rounded-lg hover:bg-gray-900 transition-all duration-300"
+        >
           Soumettre la demande
         </Button>
       </div>

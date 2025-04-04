@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 import { FormField } from "./FormField";
 
 type AdminInfo = {
@@ -23,29 +29,53 @@ interface AdminInfoFormProps {
   onPrev: () => void;
 }
 
-
-export const AdminInfoForm = ({ adminInfo, onChange, onNext, onPrev }: AdminInfoFormProps) => {
+export const AdminInfoForm = ({
+  adminInfo,
+  onChange,
+  onNext,
+  onPrev,
+}: AdminInfoFormProps) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      onChange({ profilePhoto: e.target.files[0] });
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    const validTypes = ["image/png", "image/webp", "image/jpeg", "image/jpg"];
+    if (!validTypes.includes(file.type)) {
+      setErrors((prev) => ({
+        ...prev,
+        profilePhoto: "Format de fichier non supporté",
+      }));
+      return;
     }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setErrors((prev) => ({
+        ...prev,
+        profilePhoto: "Taille maximale 2MB dépassée",
+      }));
+      return;
+    }
+
+    setErrors((prev) => ({ ...prev, profilePhoto: "" }));
+    onChange({ profilePhoto: file });
   };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!adminInfo.fullName.trim()) {
       newErrors.fullName = "Le nom complet est requis";
     }
-    
+
     if (!adminInfo.email.trim()) {
       newErrors.email = "L'email est requis";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adminInfo.email)) {
       newErrors.email = "Format d'email invalide";
     }
-    
+
     if (!adminInfo.dateOfBirth) {
       newErrors.dateOfBirth = "La date de naissance est requise";
     } else {
@@ -56,31 +86,32 @@ export const AdminInfoForm = ({ adminInfo, onChange, onNext, onPrev }: AdminInfo
         newErrors.dateOfBirth = "L'administrateur doit avoir au moins 18 ans";
       }
     }
-    
+
     if (!adminInfo.gender) {
       newErrors.gender = "Le genre est requis";
     }
-    
+
     if (!adminInfo.phone.trim()) {
       newErrors.phone = "Le numéro de téléphone est requis";
-    } else if (!/^\d{8,15}$/.test(adminInfo.phone.replace(/\D/g, ''))) {
+    } else if (!/^\d{8,15}$/.test(adminInfo.phone.replace(/\D/g, ""))) {
       newErrors.phone = "Numéro de téléphone invalide";
     }
-    
+
     if (!adminInfo.address.trim()) {
       newErrors.address = "L'adresse est requise";
     }
-    
+
     if (!adminInfo.password) {
       newErrors.password = "Le mot de passe est requis";
     } else if (adminInfo.password.length < 8) {
-      newErrors.password = "Le mot de passe doit contenir au moins 8 caractères";
+      newErrors.password =
+        "Le mot de passe doit contenir au moins 8 caractères";
     }
-    
+
     if (adminInfo.password !== adminInfo.confirmPassword) {
       newErrors.confirmPassword = "Les mots de passe ne correspondent pas";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -94,22 +125,16 @@ export const AdminInfoForm = ({ adminInfo, onChange, onNext, onPrev }: AdminInfo
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-medium">Informations de l'administrateur</h3>
-      
-      <FormField
-        label="Nom complet"
-        error={errors.fullName}
-      >
+
+      <FormField label="Nom complet" error={errors.fullName}>
         <Input
           value={adminInfo.fullName}
           onChange={(e) => onChange({ fullName: e.target.value })}
           placeholder="Nom et prénom"
         />
       </FormField>
-      
-      <FormField
-        label="Email"
-        error={errors.email}
-      >
+
+      <FormField label="Email" error={errors.email}>
         <Input
           value={adminInfo.email}
           onChange={(e) => onChange({ email: e.target.value })}
@@ -117,23 +142,17 @@ export const AdminInfoForm = ({ adminInfo, onChange, onNext, onPrev }: AdminInfo
           type="email"
         />
       </FormField>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
-          label="Date de naissance"
-          error={errors.dateOfBirth}
-        >
+        <FormField label="Date de naissance" error={errors.dateOfBirth}>
           <Input
             value={adminInfo.dateOfBirth}
             onChange={(e) => onChange({ dateOfBirth: e.target.value })}
             type="date"
           />
         </FormField>
-        
-        <FormField
-          label="Genre"
-          error={errors.gender}
-        >
+
+        <FormField label="Genre" error={errors.gender}>
           <Select
             value={adminInfo.gender}
             onValueChange={(value) => onChange({ gender: value })}
@@ -142,19 +161,16 @@ export const AdminInfoForm = ({ adminInfo, onChange, onNext, onPrev }: AdminInfo
               <SelectValue placeholder="Sélectionnez un genre" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="male">Homme</SelectItem>
-              <SelectItem value="female">Femme</SelectItem>
-              <SelectItem value="other">Autre</SelectItem>
+              <SelectItem value="Homme">Homme</SelectItem>
+              <SelectItem value="Femme">Femme</SelectItem>
+              <SelectItem value="Autre">Autre</SelectItem>
             </SelectContent>
           </Select>
         </FormField>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
-          label="Téléphone"
-          error={errors.phone}
-        >
+        <FormField label="Téléphone" error={errors.phone}>
           <Input
             value={adminInfo.phone}
             onChange={(e) => onChange({ phone: e.target.value })}
@@ -162,11 +178,8 @@ export const AdminInfoForm = ({ adminInfo, onChange, onNext, onPrev }: AdminInfo
             type="tel"
           />
         </FormField>
-        
-        <FormField
-          label="Adresse"
-          error={errors.address}
-        >
+
+        <FormField label="Adresse" error={errors.address}>
           <Input
             value={adminInfo.address}
             onChange={(e) => onChange({ address: e.target.value })}
@@ -174,19 +187,17 @@ export const AdminInfoForm = ({ adminInfo, onChange, onNext, onPrev }: AdminInfo
           />
         </FormField>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
-          label="Mot de passe"
-          error={errors.password}
-        >
+        <FormField label="Mot de passe" error={errors.password}>
           <Input
             value={adminInfo.password}
             onChange={(e) => onChange({ password: e.target.value })}
-            placeholder="Créez un mot de passe"type="password"
+            placeholder="Créez un mot de passe"
+            type="password"
           />
         </FormField>
-        
+
         <FormField
           label="Confirmer le mot de passe"
           error={errors.confirmPassword}
@@ -199,29 +210,24 @@ export const AdminInfoForm = ({ adminInfo, onChange, onNext, onPrev }: AdminInfo
           />
         </FormField>
       </div>
-      
-      <FormField
-        label="Photo de profil"
-        error={errors.profilePhoto}
-      >
+
+      {/* <FormField label="Photo de profil" error={errors.profilePhoto}>
         <Input
           type="file"
-          accept="image/*"
+          accept="image/png, image/webp, image/jpeg, image/jpg"
           onChange={handleFileChange}
           className="cursor-pointer"
         />
         <p className="text-xs text-gray-500 mt-1">
           Format recommandé: JPG, PNG. Taille max: 2MB
         </p>
-      </FormField>
-      
-      <div className="flex justify-between">
+      </FormField> */}
+
+      <div className="flex justify-between mt-8 translate-y-[400%]">
         <Button variant="outline" onClick={onPrev}>
           Précédent
         </Button>
-        <Button onClick={handleNext}>
-          Suivant
-        </Button>
+        <Button onClick={handleNext}>Suivant</Button>
       </div>
     </div>
   );

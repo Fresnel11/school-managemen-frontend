@@ -128,11 +128,17 @@ export const SchoolInfoForm = ({ schoolInfo, onChange, onNext }: SchoolInfoFormP
           error={errors.phone}
         >
           <Input
-            value={schoolInfo.phone}
-            onChange={(e) => onChange({ phone: e.target.value })}
-            placeholder="Numéro de téléphone"
-            type="tel"
-          />
+  value={schoolInfo.phone}
+  onChange={(e) => {
+    const value = e.target.value;
+    // Filtrer pour ne garder que les chiffres
+    const filteredValue = value.replace(/[^0-9+]/g, "");
+    onChange({ phone: filteredValue });
+  }}
+  placeholder="Numéro de téléphone"
+  type="tel"
+/>
+
         </FormField>
         
         <FormField
@@ -161,7 +167,6 @@ export const SchoolInfoForm = ({ schoolInfo, onChange, onNext }: SchoolInfoFormP
               <SelectValue placeholder="Sélectionnez un type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="primary">Primaire</SelectItem>
               <SelectItem value="secondary">Secondaire</SelectItem>
               <SelectItem value="high">Lycée</SelectItem>
               <SelectItem value="university">Université</SelectItem>
@@ -184,7 +189,8 @@ export const SchoolInfoForm = ({ schoolInfo, onChange, onNext }: SchoolInfoFormP
             <SelectContent>
               <SelectItem value="public">Public</SelectItem>
               <SelectItem value="private">Privé</SelectItem>
-              <SelectItem value="semi-private">Semi-privé</SelectItem>
+              <SelectItem value="confessional">Confessionnel</SelectItem>
+              <SelectItem value="other">Autre</SelectItem>
             </SelectContent>
           </Select>
         </FormField>
