@@ -1,7 +1,8 @@
-import { motion } from "framer-motion"; // Pour les animations
+import { useState } from "react";
+import { motion } from "framer-motion";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
-import { School, User, Info } from "lucide-react"; // Icônes
+import { School, User, Info, Loader2 } from "lucide-react";
 
 interface ReviewFormProps {
   schoolInfo: {
@@ -28,10 +29,21 @@ interface ReviewFormProps {
     profilePhoto: File | null;
   };
   onPrev: () => void;
-  onSubmit: () => void;
+  onSubmit: () => Promise<void>;
 }
 
 export const ReviewForm = ({ schoolInfo, adminInfo, onPrev, onSubmit }: ReviewFormProps) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      await onSubmit();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const formatSchoolType = (type: string) => {
     const types: Record<string, string> = {
       primary: "Primaire",
@@ -68,7 +80,7 @@ export const ReviewForm = ({ schoolInfo, adminInfo, onPrev, onSubmit }: ReviewFo
       arabic: "Arabe",
       spanish: "Espagnol",
     };
-    
+
     return languages.map(lang => languageMap[lang] || lang).join(", ");
   };
 
@@ -81,21 +93,17 @@ export const ReviewForm = ({ schoolInfo, adminInfo, onPrev, onSubmit }: ReviewFo
     });
   };
 
-  // Animation pour les cartes
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
     hover: { scale: 1.02 },
   };
 
-  // URL de l'image de profil (si elle existe)
   const profilePhotoUrl = adminInfo.profilePhoto ? URL.createObjectURL(adminInfo.profilePhoto) : null;
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 flex flex-col h-full">
-      {/* Contenu avec défilement */}
       <div className="flex-1 p-6 max-h-[calc(80vh-80px)] overflow-auto space-y-6">
-        {/* Titre principal */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -109,7 +117,6 @@ export const ReviewForm = ({ schoolInfo, adminInfo, onPrev, onSubmit }: ReviewFo
           </p>
         </motion.div>
 
-        {/* Section : Informations de l'école */}
         <motion.div
           variants={cardVariants}
           initial="hidden"
@@ -147,10 +154,8 @@ export const ReviewForm = ({ schoolInfo, adminInfo, onPrev, onSubmit }: ReviewFo
           </div>
         </motion.div>
 
-        {/* Séparateur */}
         <Separator className="bg-gray-300 h-1 rounded-full" />
 
-        {/* Section : Informations de l'administrateur */}
         <motion.div
           variants={cardVariants}
           initial="hidden"
@@ -170,20 +175,6 @@ export const ReviewForm = ({ schoolInfo, adminInfo, onPrev, onSubmit }: ReviewFo
               { label: "Genre", value: formatGender(adminInfo.gender) },
               { label: "Téléphone", value: adminInfo.phone },
               { label: "Adresse", value: adminInfo.address },
-              // {
-              //   label: "Photo de profil",
-              //   value: profilePhotoUrl ? (
-              //     <img
-              //       src={profilePhotoUrl}
-              //       alt="Photo de profil"
-              //       className="w-18 h-18  object-cover border border-gray-300"
-              //     />
-              //   ) : (
-              //     <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-medium">
-              //       N/A
-              //     </div>
-              //   ),
-              // },
             ].map((item, index) => (
               <motion.div
                 key={index}
@@ -202,7 +193,6 @@ export const ReviewForm = ({ schoolInfo, adminInfo, onPrev, onSubmit }: ReviewFo
           </div>
         </motion.div>
 
-        {/* Note */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -211,26 +201,28 @@ export const ReviewForm = ({ schoolInfo, adminInfo, onPrev, onSubmit }: ReviewFo
         >
           <Info className="w-5 h-5 text-gray-600 mt-1" />
           <p className="text-sm text-gray-700 font-medium">
-            <strong>Note :</strong> Après soumission, votre demande sera examinée par notre équipe. 
+            <strong>Note :</strong> Après soumission, votre demande sera examinée par notre équipe.
             Vous recevrez un email de confirmation une fois votre compte validé.
           </p>
         </motion.div>
       </div>
 
-      {/* Boutons fixes en bas */}
       <div className="p-6 border-t border-gray-200 bg-white flex justify-between">
         <Button
           variant="outline"
           onClick={onPrev}
+          disabled={isSubmitting}
           className="border-2 border-gray-600 text-gray-600 font-semibold py-2 px-6 rounded-lg hover:bg-gray-100 transition-all duration-300"
         >
           Précédent
         </Button>
         <Button
-          onClick={onSubmit}
-          className="bg-gray-800 text-white font-semibold py-2 px-6 rounded-lg hover:bg-gray-900 transition-all duration-300"
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className="bg-gray-800 text-white font-semibold py-2 px-6 rounded-lg hover:bg-gray-900 transition-all duration-300 flex items-center gap-2"
         >
-          Soumettre la demande
+          {isSubmitting && <Loader2 className="animate-spin w-4 h-4" />}
+          {isSubmitting ? "Soumission..." : "Soumettre la demande"}
         </Button>
       </div>
     </div>

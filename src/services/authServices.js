@@ -21,3 +21,37 @@ export const login = async (email, password) => {
       throw error.response?.data || { message: "Une erreur est survenue" };
     }
   };
+
+  export const verifyEmail = async (email, code) => {
+    try {
+      const response = await axios.post(`${API_URL}/verify-email`, {
+        email,
+        verificationCode: code, 
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: "Une erreur est survenue" };
+    }
+  };
+
+  export const resendVerificationCode = async (email) => {
+    try {
+        const response = await axios.post(`${API_URL}/resend-code`, { email });
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || { message: "Une erreur est survenue" };
+    }
+};
+
+export const getEmailFromToken = async (token) => {
+  try {
+    const response = await axios.get(`${API_URL}/get-email-token`, {
+      headers: {
+        Authorization: `Bearer ${token}`, 
+      },
+    });
+    return response.data; 
+  } catch (error) {
+    throw error.response?.data || { message: "Une erreur est survenue" };
+  }
+};

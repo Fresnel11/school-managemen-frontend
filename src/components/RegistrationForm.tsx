@@ -6,6 +6,7 @@ import { ReviewForm } from "./registration/ReviewForm";
 import { ProgressSteps } from "./registration/ProgressSteps";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { registerSchool } from "../services/authServices";
+import { useNavigate } from "react-router-dom";
 
 type SchoolInfo = {
   name: string;
@@ -31,6 +32,8 @@ type AdminInfo = {
   confirmPassword: string;
   profilePhoto: File | null;
 };
+
+
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -107,54 +110,59 @@ export const RegistrationForm = () => {
   const handleAdminInfoChange = (info: Partial<AdminInfo>) => {
     setAdminInfo((prev) => ({ ...prev, ...info }));
   };
-
+  const navigate = useNavigate();
   const handleSubmit = async () => {
     setSubmissionStatus(null);
     setSubmissionMessage("");
-
-    // Mapper les données aux noms attendus par le backend
+  
     const schoolData = {
-        name: schoolInfo.name,
-        address: schoolInfo.address,
-        phone: schoolInfo.phone,
-        schoolEmail: schoolInfo.email, // Renommé pour correspondre au backend
-        schoolType: schoolInfo.schoolType,
-        status: schoolInfo.status,
-        postalBox: schoolInfo.postalBox,
-        officialId: schoolInfo.officialId,
-        languages: schoolInfo.languages,
-        website: schoolInfo.website,
+      name: schoolInfo.name,
+      address: schoolInfo.address,
+      phone: schoolInfo.phone,
+      schoolEmail: schoolInfo.email,
+      schoolType: schoolInfo.schoolType,
+      status: schoolInfo.status,
+      postalBox: schoolInfo.postalBox,
+      officialId: schoolInfo.officialId,
+      languages: schoolInfo.languages,
+      website: schoolInfo.website,
     };
-
+  
     const adminData = {
-        fullName: adminInfo.fullName,
-        adminEmail: adminInfo.email, // Renommé pour correspondre au backend
-        dateOfBirth: adminInfo.dateOfBirth,
-        gender: adminInfo.gender,
-        userPhone: adminInfo.phone, // Renommé pour correspondre au backend
-        address: adminInfo.address,
-        password: adminInfo.password,
-        profilePhoto: adminInfo.profilePhoto, 
+      fullName: adminInfo.fullName,
+      adminEmail: adminInfo.email,
+      dateOfBirth: adminInfo.dateOfBirth,
+      gender: adminInfo.gender,
+      userPhone: adminInfo.phone,
+      address: adminInfo.address,
+      password: adminInfo.password,
+      profilePhoto: adminInfo.profilePhoto,
     };
-
+  
     try {
-        const response = await registerSchool(
-            JSON.stringify(schoolData),  // Sérialise les données en JSON
-            JSON.stringify(adminData)    // Sérialise également adminData
-        );
-        setSubmissionStatus("success");
-        setSubmissionMessage(
-            response.message || "Inscription réussie ! En attente de validation."
-        );
-        console.log("Réponse de l'API :", response);
+      const response = await registerSchool(
+        JSON.stringify(schoolData),
+        JSON.stringify(adminData)
+      );
+      setSubmissionStatus("success");
+      setSubmissionMessage(
+        response.message || "Inscription réussie ! En attente de validation."
+      );
+      console.log("Réponse de l'API :", response);
+  
+      // Stocker l'email de l'administrateur dans localStorage
+      localStorage.setItem("pendingEmail", adminInfo.email);
+  
+      // Rediriger vers la page de confirmation
+      navigate("/confirm-email");
     } catch (error) {
-        setSubmissionStatus("error");
-        setSubmissionMessage(
-            error.message || "Une erreur est survenue lors de l'inscription."
-        );
-        console.error("Erreur lors de l'inscription :", error);
+      setSubmissionStatus("error");
+      setSubmissionMessage(
+        error.message || "Une erreur est survenue lors de l'inscription."
+      );
+      console.error("Erreur lors de l'inscription :", error);
     }
-};
+  };
 
   
 

@@ -1,10 +1,12 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from "react-router-dom";
 import { RegistrationForm } from "./components/RegistrationForm";
 import { LoginForm } from "./components/LoginForm";
 import { DataTable } from "./components/DataTable";
 import { columns } from "./components/columns";
 import { users } from "./data/users";
+import { EmailConfirmationForm } from "./components/EmailConfirmationForm";
 
 // Composant Home
 const Home: React.FC = () => (
@@ -54,14 +56,34 @@ const Dashboard: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
+
+  const handleConfirmCode = async (code: string) => {
+    // Remplacez ceci par un appel API réel pour vérifier le code
+    console.log("Code saisi :", code);
+    // Simule une vérification (par exemple, code correct = "123456")
+    const isValid = code === "123456";
+    if (isValid) {
+      // Si le code est correct, on peut considérer le compte comme activé
+      setRegisteredEmail(null); // Réinitialiser l'email après confirmation
+      return true;
+    }
+    return false;
+  };
+
+ 
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
         {/* Routes */}
         <Routes>
           <Route path="/login" element={<LoginForm />} />
-          <Route path="/register" element={<RegistrationForm />} />
+          <Route
+          path="/register"
+          element={<RegistrationForm />}
+        />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/confirm-email" element ={ <EmailConfirmationForm />}/>
           <Route path="/" element={<Home />} /> {/* Page d'accueil par défaut */}
         </Routes>
       </div>
