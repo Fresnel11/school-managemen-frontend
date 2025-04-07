@@ -2,6 +2,20 @@ import axios from "axios";
 
 const API_URL = "http://localhost:5000/api"; 
 
+// Configurer l'intercepteur pour ajouter le token à chaque requête
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 // Fonction d'inscription d'une école et de son admin
 export const registerSchool = async (schoolData, adminData) => {
     try {

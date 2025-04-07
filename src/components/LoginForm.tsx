@@ -11,7 +11,9 @@ import {
   CardDescription,
 } from "../components/ui/card";
 import { login } from "../services/authServices";
+import { useAuth } from "../context/AuthContext"; 
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 interface LoginResponse {
   message?: string;
@@ -30,7 +32,8 @@ export const LoginForm: React.FC = () => {
   const [status, setStatus] = useState<Status>(null);
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>(false); // État pour le chargement
-
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -43,11 +46,8 @@ export const LoginForm: React.FC = () => {
     setIsLoading(true); // Activer le loader
 
     try {
-      const response: LoginResponse = await login(formData.email, formData.password);
-      setStatus("success");
-      setMessage(response.message || "Connexion réussie !");
-      console.log("Données de connexion :", response.data);
-      console.log("Token JWT :", response.token);
+      await login(formData.email, formData.password);
+      
     } catch (error: any) {
       setStatus("error");
       setMessage(error.message || "Erreur lors de la connexion.");
