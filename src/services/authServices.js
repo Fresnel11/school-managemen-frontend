@@ -55,3 +55,37 @@ export const getEmailFromToken = async (token) => {
     throw error.response?.data || { message: "Une erreur est survenue" };
   }
 };
+
+// 1. Envoyer le code de réinitialisation
+export const sendResetCode = async (email) => {
+  try {
+      const response = await axios.post(`${API_URL}/send-reset-code`, { email });
+      return response.data;
+  } catch (error) {
+      throw error.response?.data || { message: "Une erreur est survenue" };
+  }
+};
+
+// 2. Vérifier le code de réinitialisation
+export const verifyResetCode = async (email, code) => {
+  try {
+      const response = await axios.post(`${API_URL}/verify-reset-code`, { email, code });
+      return response.data;
+  } catch (error) {
+      throw error.response?.data || { message: "Code invalide ou expiré" };
+  }
+};
+
+// 3. Réinitialiser le mot de passe
+export const resetPassword = async (email, code, newPassword) => {
+  try {
+      const response = await axios.post(`${API_URL}/reset-password`, {
+          email,
+          code,
+          newPassword,
+      });
+      return response.data;
+  } catch (error) {
+      throw error.response?.data || { message: "Une erreur est survenue lors du changement de mot de passe" };
+  }
+};

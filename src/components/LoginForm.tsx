@@ -29,6 +29,7 @@ export const LoginForm: React.FC = () => {
 
   const [status, setStatus] = useState<Status>(null);
   const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState<boolean>(false); // État pour le chargement
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -39,6 +40,7 @@ export const LoginForm: React.FC = () => {
     e.preventDefault();
     setStatus(null);
     setMessage("");
+    setIsLoading(true); // Activer le loader
 
     try {
       const response: LoginResponse = await login(formData.email, formData.password);
@@ -50,6 +52,8 @@ export const LoginForm: React.FC = () => {
       setStatus("error");
       setMessage(error.message || "Erreur lors de la connexion.");
       console.error("Erreur de connexion :", error);
+    } finally {
+      setIsLoading(false); // Désactiver le loader
     }
   };
 
@@ -107,6 +111,17 @@ export const LoginForm: React.FC = () => {
       color: "#000000",
       transition: { duration: 0.3 },
     },
+  };
+
+  // Fonction pour répartir les particules de manière équilibrée
+  const getParticlePosition = (index: number, total: number) => {
+    const side = index % 2 === 0 ? "left" : "right"; // Alterne entre gauche et droite
+    const xRange = side === "left" ? window.innerWidth * 0.4 : window.innerWidth * 0.6;
+    const xOffset = Math.random() * (window.innerWidth * 0.2) - (window.innerWidth * 0.1); // Variation autour de la position
+    return {
+      x: xRange + xOffset,
+      y: Math.random() * window.innerHeight,
+    };
   };
 
   return (
@@ -187,9 +202,17 @@ export const LoginForm: React.FC = () => {
               >
                 <Button
                   type="submit"
-                  className="w-full bg-black text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300"
+                  disabled={isLoading}
+                  className="w-full bg-black text-white font-semibold py-2 px-6 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2"
                 >
-                  Se connecter
+                  <span>{isLoading ? "Connexion..." : "Se connecter"}</span>
+                  {isLoading && (
+                    <motion.div
+                      className="w-5 h-5 border-2 border-t-transparent border-white rounded-full"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    />
+                  )}
                 </Button>
               </motion.div>
             </form>
@@ -234,18 +257,21 @@ export const LoginForm: React.FC = () => {
 
       {/* Effet de particules flottantes */}
       <div className="absolute inset-0 pointer-events-none">
-        {[...Array(10)].map((_, i) => (
+        {[...Array(30)].map((_, i) => (
           <motion.div
             key={i}
-            className="absolute w-2 h-2 bg-gray-400 rounded-full"
-            initial={{
-              x: Math.random() * window.innerWidth,
-              y: Math.random() * window.innerHeight,
-            }}
+            className="absolute w-2 h-2 bg-gray-500 rounded-full"
+            initial={getParticlePosition(i, 30)}
             animate={{
-              y: [null, Math.random() * window.innerHeight - 100],
-              x: [null, Math.random() * window.innerHeight - 100],
-              opacity: [0.3, 0.7, 0.3],
+              y: [
+                null,
+                Math.random() * window.innerHeight * 0.8, // Limiter l'amplitude sur l'axe y
+              ],
+              x: [
+                null,
+                getParticlePosition(i, 30).x + (Math.random() * 200 - 100), // Mouvement horizontal équilibré
+              ],
+              opacity: [0.5, 1, 0.5],
               transition: {
                 duration: Math.random() * 5 + 5,
                 repeat: Infinity,

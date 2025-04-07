@@ -7,6 +7,7 @@ import { DataTable } from "./components/DataTable";
 import { columns } from "./components/columns";
 import { users } from "./data/users";
 import { EmailConfirmationForm } from "./components/EmailConfirmationForm";
+import { ForgotPasswordForm } from "./components/ForgotPasswordForm";
 
 // Composant Home
 const Home: React.FC = () => (
@@ -56,22 +57,7 @@ const Dashboard: React.FC = () => {
 };
 
 const App: React.FC = () => {
-  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
 
-  const handleConfirmCode = async (code: string) => {
-    // Remplacez ceci par un appel API réel pour vérifier le code
-    console.log("Code saisi :", code);
-    // Simule une vérification (par exemple, code correct = "123456")
-    const isValid = code === "123456";
-    if (isValid) {
-      // Si le code est correct, on peut considérer le compte comme activé
-      setRegisteredEmail(null); // Réinitialiser l'email après confirmation
-      return true;
-    }
-    return false;
-  };
-
- 
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
@@ -82,6 +68,7 @@ const App: React.FC = () => {
           path="/register"
           element={<RegistrationForm />}
         />
+          <Route path="/forgot-password" element={<ForgotPasswordForm />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/confirm-email" element ={ <EmailConfirmationForm />}/>
           <Route path="/" element={<Home />} /> {/* Page d'accueil par défaut */}
