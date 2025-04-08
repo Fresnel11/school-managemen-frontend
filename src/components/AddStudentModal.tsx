@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal } from "../components/ui/modal";
 import { createStudent } from "../services/studentService";
+import { getAllClassrooms } from "../services/classroomServices"; // Import corrigé
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { X } from "lucide-react";
@@ -18,6 +19,30 @@ export function AddStudentModal({ isOpen, onClose, onStudentAdded }: AddStudentM
   const [parents, setParents] = useState<any[]>([]); // Liste des parents ajoutés
   const [showParentFields, setShowParentFields] = useState(false); // Contrôle l'affichage des champs des parents
   const [parentData, setParentData] = useState<Record<string, any>>({}); // Données du parent en cours d'ajout
+  const [classrooms, setClassrooms] = useState<any[]>([]); // Liste des classes
+  const [loadingClassrooms, setLoadingClassrooms] = useState(false); // État de chargement des classes
+  const [errorClassrooms, setErrorClassrooms] = useState<string | null>(null); // Erreur lors de la récupération des classes
+
+  // Récupérer les classes lorsque le modal s'ouvre
+  useEffect(() => {
+    if (isOpen) {
+      const fetchClassrooms = async () => {
+        try {
+          setLoadingClassrooms(true);
+          setErrorClassrooms(null);
+          const data = await getAllClassrooms();
+          setClassrooms(data);
+        } catch (error: any) {
+          console.error("Erreur lors de la récupération des classes:", error);
+          setErrorClassrooms("Erreur lors de la récupération des classes.");
+        } finally {
+          setLoadingClassrooms(false);
+        }
+      };
+
+      fetchClassrooms();
+    }
+  }, [isOpen]);
 
   // Champs pour le formulaire de l'étudiant
   const studentFields = [
@@ -31,10 +56,15 @@ export function AddStudentModal({ isOpen, onClose, onStudentAdded }: AddStudentM
     { name: "address", label: "Adresse", type: "text", required: true },
     { name: "phoneNumber", label: "Numéro de téléphone", type: "text" },
     { name: "email", label: "Email", type: "email", required: true },
+    { name: "classroomId", label: "Classe", type: "select", options: classrooms.map((classroom) => ({
+      value: classroom._id,
+      label: classroom.name,
+    })), required: true },
     { name: "status", label: "Statut", type: "select", options: [
       { value: "active", label: "Actif" },
-      { value: "inactive", label: "Inactif" },
-      { value: "pending", label: "En attente" },
+      { value: "graduated", label: "Gradué(e)" },
+      { value: "transferred", label: "Transféré(e)" },
+      { value: "excluded", label: "Exclu(e)" },
     ], required: true },
   ];
 
@@ -200,6 +230,18 @@ export function AddStudentModal({ isOpen, onClose, onStudentAdded }: AddStudentM
           </div>
         )}
       </div>
+
+      {/* Afficher un message de chargement ou d'erreur pour les classes */}
+      {loadingClassrooms && (
+        <div className="mt-4 text-center text-gray-500">
+          Chargement des classes...
+        </div>
+      )}
+      {errorClassrooms && (
+        <div className="mt-4 text-center text-red-500">
+          {errorClassrooms}
+        </div>
+      )}
     </Modal>
   );
 }
