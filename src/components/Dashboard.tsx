@@ -4,8 +4,31 @@ import { AttendanceChart } from "./charts/AttendanceChart";
 import { EnrollmentChart } from "./charts/EnrollmentChart";
 import { RecentActivity } from "./RecentActivity";
 import { Users, GraduationCap, UserRound, CalendarDays } from "lucide-react";
+import { getAllStudents } from "@/services/studentService";
+import { useEffect, useState } from "react";
 
 export function Dashboard() {
+  const [students, setStudents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+   useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const students = await getAllStudents();
+          console.log("Fetched students:", students);
+          setStudents(students);
+          setLoading(false);
+        } catch (error) {
+          console.error("Error fetching data:", error);
+          setError("Failed to fetch data. Please try again later.");
+          setLoading(false);
+        }
+      };
+  
+      fetchData();
+    }, []);
+  
   return (
     <div className="space-y-6">
       <div>
@@ -22,7 +45,13 @@ export function Dashboard() {
             <GraduationCap className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,248</div>
+          {loading ? (
+              <div className="text-lg">Loading...</div>  // Affiche "Loading..." pendant le chargement
+            ) : error ? (
+              <div className="text-red-500">{error}</div>  // Affiche l'erreur si elle existe
+            ) : (
+              <div className="text-2xl font-bold">{students.length}</div>  // Affiche le nombre total d'étudiants
+            )}
             <p className="text-xs text-muted-foreground">
               +12% from last month
             </p>

@@ -26,6 +26,15 @@ export const registerSchool = async (schoolData, adminData) => {
     }
 };
 
+export const getUserInfo = async (token) => {
+  const res = await axios.get(`${API_URL}/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return res.data; // { id, name, email, ... }
+};
+
 // Nouvelle fonction de connexion
 export const login = async (email, password) => {
     try {
