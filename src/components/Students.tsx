@@ -21,35 +21,37 @@ export function Students() {
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false); // État pour le modal
 
-  // Récupérer les étudiants depuis l'API
-  useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        setLoading(true);
-        const data = await getAllStudents();
-        setStudents(data);
-        setError(null);
-      } catch (err: any) {
-        setError(err.message || "Une erreur est survenue lors de la récupération des étudiants.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Fonction pour charger les étudiants
+  const fetchStudents = async () => {
+    try {
+      setLoading(true);
+      const data = await getAllStudents();
+      setStudents(data);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || "Une erreur est survenue lors de la récupération des étudiants.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // Récupérer les étudiants au chargement initial
+  useEffect(() => {
     fetchStudents();
   }, []);
 
   // Définir un rendu personnalisé pour le statut
   const renderStatus = (row: any) => {
-    const statusMap: Record<string, { color: string; bg: string }> = {
-      active: { color: "text-green-700", bg: "bg-green-100" },
-      inactive: { color: "text-gray-700", bg: "bg-gray-100" },
-      pending: { color: "text-amber-700", bg: "bg-amber-100" },
+    const statusMap: Record<string, { color: string; bg: string; label: string }> = {
+      active: { color: "text-green-700", bg: "bg-green-100", label: "Actif" },
+      graduated: { color: "text-blue-700", bg: "bg-blue-100", label: "Gradué(e)" },
+      transferred: { color: "text-orange-700", bg: "bg-orange-100", label: "Transféré(e)" },
+      excluded: { color: "text-red-700", bg: "bg-red-100", label: "Exclu(e)" },
     };
-    const style = statusMap[row.status?.toLowerCase()] || { color: "text-gray-700", bg: "bg-gray-100" };
+    const style = statusMap[row.status?.toLowerCase()] || { color: "text-gray-700", bg: "bg-gray-100", label: "N/A" };
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${style.color} ${style.bg}`}>
-        {row.status || "N/A"}
+        {style.label}
       </span>
     );
   };
@@ -134,8 +136,9 @@ export function Students() {
   });
 
   // Gérer l'ajout d'un étudiant
-  const handleStudentAdded = (newStudent: any) => {
-    setStudents((prev) => [...prev, newStudent]);
+  const handleStudentAdded = async () => {
+    // Recharger les données complètes après l'ajout
+    await fetchStudents();
   };
 
   return (

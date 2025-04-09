@@ -80,6 +80,7 @@ export function AddStudentModal({ isOpen, onClose, onStudentAdded }: AddStudentM
       { value: "Père", label: "Père" },
       { value: "Mère", label: "Mère" },
       { value: "Tuteur", label: "Tuteur" },
+      { value: "Tutrice", label: "Tutrice" },
     ], required: true },
   ];
 

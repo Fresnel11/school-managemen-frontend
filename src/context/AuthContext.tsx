@@ -42,7 +42,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Vérifier si un token est présent dans localStorage au chargement
   useEffect(() => {
-    const storedToken = localStorage.getItem("authToken");
+    const storedToken = localStorage.getItem("token");
     if (storedToken) {
       setToken(storedToken);
       setIsAuthenticated(true);
@@ -51,7 +51,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const fetchUserInfo = async () => {
-      const storedToken = localStorage.getItem("authToken");
+      const storedToken = localStorage.getItem("token");
       if (storedToken) {
         try {
           setToken(storedToken);
@@ -71,8 +71,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     try {
       const response = await loginService(email, password); // Appeler votre service
-      const { token } = response; // Supposons que l'API renvoie un token
-      localStorage.setItem("authToken", token); // Stocker le token
+      const { token } = response;
+      localStorage.setItem("token", token); // Stocker le token
       setToken(token);
       const userData = await getUserInfo(token);
       setUser(userData.user);;
@@ -88,7 +88,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   });
 
   const logout = () => {
-    localStorage.removeItem("authToken"); // Supprimer le token
+    localStorage.removeItem("token"); // Supprimer le token
     setToken(null);
     setIsAuthenticated(false);
   };

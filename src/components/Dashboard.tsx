@@ -5,12 +5,16 @@ import { EnrollmentChart } from "./charts/EnrollmentChart";
 import { RecentActivity } from "./RecentActivity";
 import { Users, GraduationCap, UserRound, CalendarDays } from "lucide-react";
 import { getAllStudents } from "@/services/studentService";
+import { getAllParents } from "@/services/parentServices";
 import { useEffect, useState } from "react";
 
 export function Dashboard() {
   const [students, setStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [parents, setParents] = useState<any[]>([]);
+
+  
 
    useEffect(() => {
       const fetchData = async () => {
@@ -27,6 +31,17 @@ export function Dashboard() {
       };
   
       fetchData();
+
+      const fetchParents = async () => {
+        try {
+          const parents = await getAllParents();
+          setParents(parents);
+        }
+        catch (err) {
+          console.error("Error fetching parents:", err);
+        }
+      };
+      fetchParents(); 
     }, []);
   
   return (
@@ -77,7 +92,13 @@ export function Dashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,842</div>
+          {loading ? (
+              <div className="text-lg">Loading...</div>  // Affiche "Loading..." pendant le chargement
+            ) : error ? (
+              <div className="text-red-500">{error}</div>  // Affiche l'erreur si elle existe
+            ) : (
+              <div className="text-2xl font-bold">{parents.length}</div>  // Affiche le nombre total d'étudiants
+            )}
             <p className="text-xs text-muted-foreground">
               +18 new this month
             </p>
