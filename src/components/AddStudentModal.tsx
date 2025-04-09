@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Modal } from "../components/ui/modal";
 import { createStudent } from "../services/studentService";
-import { getAllClassrooms } from "../services/classroomServices"; // Import corrigé
+import { getAllClassrooms } from "../services/classroomServices";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { X } from "lucide-react";
@@ -12,18 +12,19 @@ import { Label } from "@/components/ui/label";
 interface AddStudentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onStudentAdded: (student: any) => void; // Callback pour ajouter l'étudiant à la liste
+  onStudentAdded: (student: any) => void;
 }
 
 export function AddStudentModal({ isOpen, onClose, onStudentAdded }: AddStudentModalProps) {
-  const [parents, setParents] = useState<any[]>([]); // Liste des parents ajoutés
-  const [showParentFields, setShowParentFields] = useState(false); // Contrôle l'affichage des champs des parents
-  const [parentData, setParentData] = useState<Record<string, any>>({}); // Données du parent en cours d'ajout
-  const [classrooms, setClassrooms] = useState<any[]>([]); // Liste des classes
-  const [loadingClassrooms, setLoadingClassrooms] = useState(false); // État de chargement des classes
-  const [errorClassrooms, setErrorClassrooms] = useState<string | null>(null); // Erreur lors de la récupération des classes
+  const [parents, setParents] = useState<any[]>([]);
+  const [showParentFields, setShowParentFields] = useState(false);
+  const [parentData, setParentData] = useState<Record<string, any>>({});
+  const [classrooms, setClassrooms] = useState<any[]>([]);
+  const [loadingClassrooms, setLoadingClassrooms] = useState(false);
+  const [errorClassrooms, setErrorClassrooms] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [parentErrors, setParentErrors] = useState<Record<string, string>>({});
 
-  // Récupérer les classes lorsque le modal s'ouvre
   useEffect(() => {
     if (isOpen) {
       const fetchClassrooms = async () => {
@@ -44,7 +45,78 @@ export function AddStudentModal({ isOpen, onClose, onStudentAdded }: AddStudentM
     }
   }, [isOpen]);
 
-  // Champs pour le formulaire de l'étudiant
+  // Fonctions de validation
+  const validateName = (value: string, fieldName: string) => {
+    if (!value) return `${fieldName} est requis`;
+    if (!/^[A-Za-zÀ-ÿ\s-]+$/.test(value)) return `${fieldName} doit contenir uniquement des lettres, espaces ou tirets`;
+    return "";
+  };
+
+  const validateEmail = (value: string) => {
+    if (!value) return "Email est requis";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Email invalide";
+    return "";
+  };
+
+ 
+  const validateDateOfBirth = (value: string) => {
+    if (!value) return "Date de naissance est requise";
+    const date = new Date(value);
+    const today = new Date();
+    let age = today.getFullYear() - date.getFullYear();
+    const monthDiff = today.getMonth() - date.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < date.getDate())) {
+      age--;
+    }
+    if (age < 5 || age > 25) return "L'âge doit être entre 5 et 25 ans";
+    return "";
+  };
+
+  const validateStudentData = (data: Record<string, any>) => {
+    const newErrors: Record<string, string> = {};
+    studentFields.forEach((field) => {
+      const value = data[field.name];
+      if (field.required && !value) {
+        newErrors[field.name] = `${field.label} est requis`;
+      } else {
+        if (field.name === "firstName" || field.name === "lastName") {
+          const error = validateName(value, field.label);
+          if (error) newErrors[field.name] = error;
+        }
+        if (field.name === "email") {
+          const error = validateEmail(value);
+          if (error) newErrors[field.name] = error;
+        }
+        
+        if (field.name === "dateOfBirth") {
+          const error = validateDateOfBirth(value);
+          if (error) newErrors[field.name] = error;
+        }
+      }
+    });
+    return newErrors;
+  };
+
+  const validateParentData = (data: Record<string, any>) => {
+    const newErrors: Record<string, string> = {};
+    parentFields.forEach((field) => {
+      const value = data[field.name];
+      if (field.required && !value) {
+        newErrors[field.name] = `${field.label} est requis`;
+      } else {
+        if (field.name === "firstName" || field.name === "lastName") {
+          const error = validateName(value, field.label);
+          if (error) newErrors[field.name] = error;
+        }
+        if (field.name === "email") {
+          const error = validateEmail(value);
+          if (error) newErrors[field.name] = error;
+        } 
+      }
+    });
+    return newErrors;
+  };
+
   const studentFields = [
     { name: "firstName", label: "Prénom", type: "text", required: true },
     { name: "lastName", label: "Nom", type: "text", required: true },
@@ -68,7 +140,6 @@ export function AddStudentModal({ isOpen, onClose, onStudentAdded }: AddStudentM
     ], required: true },
   ];
 
-  // Champs pour le formulaire du parent
   const parentFields = [
     { name: "firstName", label: "Prénom", type: "text", required: true },
     { name: "lastName", label: "Nom", type: "text", required: true },
@@ -80,39 +151,51 @@ export function AddStudentModal({ isOpen, onClose, onStudentAdded }: AddStudentM
       { value: "Père", label: "Père" },
       { value: "Mère", label: "Mère" },
       { value: "Tuteur", label: "Tuteur" },
-      { value: "Tutrice", label: "Tutrice" },
     ], required: true },
   ];
 
-  // Gérer les changements dans les champs des parents
   const handleParentChange = (name: string, value: string) => {
-    setParentData((prev) => ({ ...prev, [name]: value }));
+    setParentData((prev) => {
+      const updatedData = { ...prev, [name]: value };
+      const newErrors = validateParentData(updatedData);
+      setParentErrors(newErrors);
+      return updatedData;
+    });
   };
 
-  // Gérer l'ajout d'un parent
   const handleAddParent = () => {
-    if (Object.keys(parentData).length === 0) {
-      alert("Veuillez remplir les champs du parent.");
+    const newErrors = validateParentData(parentData);
+    setParentErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
       return;
     }
     setParents((prev) => [...prev, parentData]);
-    setParentData({}); // Réinitialiser les champs après ajout
-    setShowParentFields(false); // Cacher les champs après ajout
+    setParentData({});
+    setShowParentFields(false);
+    setParentErrors({});
   };
 
-  // Gérer la soumission du formulaire de l'étudiant
   const handleSubmit = async (studentData: any) => {
+    const newErrors = validateStudentData(studentData);
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
     try {
+      console.log("Données envoyées à createStudent:", studentData);
       const studentPayload = {
         ...studentData,
-        parents, // Ajouter les parents au payload
+        parents,
       };
       const response = await createStudent(studentPayload);
-      onStudentAdded(response.student); // Ajouter l'étudiant à la liste
-      onClose(); // Fermer le modal
-      setParents([]); // Réinitialiser la liste des parents
-      setParentData({}); // Réinitialiser les données du parent
-      setShowParentFields(false); // Cacher les champs des parents
+      console.log("Réponse de createStudent:", response);
+      onStudentAdded(response.student);
+      onClose();
+      setParents([]);
+      setParentData({});
+      setShowParentFields(false);
+      setErrors({});
+      setParentErrors({});
     } catch (error: any) {
       console.error("Erreur lors de l'ajout de l'étudiant:", error);
       alert("Erreur lors de l'ajout de l'étudiant.");
@@ -126,8 +209,10 @@ export function AddStudentModal({ isOpen, onClose, onStudentAdded }: AddStudentM
       onSubmit={handleSubmit}
       title="Ajouter un étudiant"
       fields={studentFields}
+      errors={errors}
+      size="lg"
+      submitButtonText="Ajouter"
     >
-      {/* Section pour les parents */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-medium text-gray-800">Parents/Tuteurs ({parents.length}/2)</h3>
@@ -142,7 +227,6 @@ export function AddStudentModal({ isOpen, onClose, onStudentAdded }: AddStudentM
           )}
         </div>
 
-        {/* Liste des parents ajoutés */}
         {parents.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {parents.map((parent, index) => (
@@ -168,7 +252,6 @@ export function AddStudentModal({ isOpen, onClose, onStudentAdded }: AddStudentM
           </div>
         )}
 
-        {/* Champs pour ajouter un parent */}
         {showParentFields && (
           <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
             <h4 className="text-md font-medium text-gray-800">Nouveau parent/tuteur</h4>
@@ -205,6 +288,9 @@ export function AddStudentModal({ isOpen, onClose, onStudentAdded }: AddStudentM
                       className="w-full"
                     />
                   )}
+                  {parentErrors[field.name] && (
+                    <p className="text-red-500 text-xs">{parentErrors[field.name]}</p>
+                  )}
                 </div>
               ))}
             </div>
@@ -215,6 +301,7 @@ export function AddStudentModal({ isOpen, onClose, onStudentAdded }: AddStudentM
                 onClick={() => {
                   setShowParentFields(false);
                   setParentData({});
+                  setParentErrors({});
                 }}
                 className="text-gray-600 border-gray-300"
               >
@@ -232,7 +319,6 @@ export function AddStudentModal({ isOpen, onClose, onStudentAdded }: AddStudentM
         )}
       </div>
 
-      {/* Afficher un message de chargement ou d'erreur pour les classes */}
       {loadingClassrooms && (
         <div className="mt-4 text-center text-gray-500">
           Chargement des classes...

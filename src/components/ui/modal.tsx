@@ -10,8 +10,8 @@ import { Card } from "@/components/ui/card";
 interface FieldConfig<T = string> {
   name: string;
   label: string;
-  type: "text" | "email" | "date" | "select" | "textarea" | T; // Ajouter T pour des extensions
-  options?: { value: string; label: string }[]; // Pour les champs de type "select"
+  type: "text" | "email" | "date" | "select" | "textarea" | T;
+  options?: { value: string; label: string }[];
   required?: boolean;
 }
 
@@ -22,7 +22,11 @@ interface ModalProps {
   title: string;
   fields: FieldConfig[];
   initialData?: Record<string, any>;
-  children?: React.ReactNode; // Pour ajouter du contenu personnalisé
+  children?: React.ReactNode;
+  size?: "sm" | "lg"; // Ajout d'un prop pour la taille
+  submitButtonText?: string; // Ajout d'un prop pour le texte du bouton
+  submitButtonIcon?: React.ReactNode; // Ajout d'un prop pour l'icône du bouton
+  errors?: Record<string, string>; // Ajout d'un prop pour afficher les erreurs
 }
 
 export function Modal({
@@ -33,6 +37,10 @@ export function Modal({
   fields,
   initialData = {},
   children,
+  size = "lg", // Par défaut, taille large
+  submitButtonText = "Ajouter", // Par défaut, "Ajouter"
+  submitButtonIcon, // Icône optionnelle
+  errors = {}, // Par défaut, pas d'erreurs
 }: ModalProps) {
   const [formData, setFormData] = useState<Record<string, any>>(initialData);
 
@@ -41,7 +49,7 @@ export function Modal({
     if (isOpen) {
       setFormData(initialData);
     }
-  }, [isOpen]); // Retirer initialData des dépendances pour éviter une réinitialisation à chaque changement
+  }, [isOpen]);
 
   const handleChange = (name: string, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -58,8 +66,9 @@ export function Modal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <Card
         className={cn(
-          "w-full max-w-4xl max-h-[90vh] overflow-y-auto p-8 transform transition-all duration-300 ease-in-out",
+          "max-h-[90vh] overflow-y-auto transform transition-all duration-300 ease-in-out",
           "bg-white/95 border border-gray-200 shadow-xl rounded-xl",
+          size === "sm" ? "w-full max-w-md p-6" : "w-full max-w-4xl p-8", // Ajustement de la taille
           isOpen ? "scale-100 opacity-100" : "scale-95 opacity-0"
         )}
       >
@@ -121,19 +130,22 @@ export function Modal({
                     className="w-full"
                   />
                 )}
+                {errors[field.name] && (
+                  <p className="text-red-500 text-xs">{errors[field.name]}</p>
+                )}
               </div>
             ))}
           </div>
 
           {/* Contenu personnalisé */}
           {children && (
-            <div className="mt-8 pt-6 border-t border-gray-200">
+            <div className="mt-6 pt-4 border-t border-gray-200">
               {children}
             </div>
           )}
 
           {/* Boutons */}
-          <div className="flex justify-end gap-3 mt-8">
+          <div className="flex justify-end gap-3 mt-6">
             <Button
               type="button"
               variant="outline"
@@ -144,9 +156,14 @@ export function Modal({
             </Button>
             <Button
               type="submit"
-              className="px-6 py-2 text-white"
+              className={cn(
+                "px-6 py-2 flex items-center gap-2 text-white",
+                submitButtonText === "Supprimer" ? "bg-red-600 hover:bg-red-700" : "",
+                submitButtonText === "Archiver" ? "bg-yellow-600 hover:bg-yellow-700" : ""
+              )}
             >
-              Ajouter
+              {submitButtonIcon && <span>{submitButtonIcon}</span>}
+              {submitButtonText}
             </Button>
           </div>
         </form>

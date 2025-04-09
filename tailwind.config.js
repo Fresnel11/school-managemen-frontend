@@ -49,6 +49,25 @@ module.exports = {
         md: `calc(var(--radius) - 2px)`,
         sm: `calc(var(--radius) - 4px)`,
       },
+      keyframes: {
+        slideInRight: {
+          "0%": { transform: "translateX(100%)", opacity: "0" },
+          "100%": { transform: "translateX(0)", opacity: "1" },
+        },
+        slideOutRight: {
+          "0%": { transform: "translateX(0)", opacity: "1" },
+          "100%": { transform: "translateX(100%)", opacity: "0" },
+        },
+        progressBar: {
+          "0%": { width: "100%" },
+          "100%": { width: "0%" },
+        },
+      },
+      animation: {
+        slideInRight: "slideInRight 0.3s ease-out",
+        slideOutRight: "slideOutRight 0.3s ease-in",
+        progressBar: "progressBar linear forwards",
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

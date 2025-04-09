@@ -3,15 +3,24 @@ import axios from "axios";
 // Remplacez cette URL par l'URL de votre backend
 const API_URL = "http://localhost:5000/api/students";
 
-// Récupérer tous les étudiants
+// Récupérer tous les étudiants non archivés
 export const getAllStudents = async () => {
   try {
     const response = await axios.get(API_URL);
     console.log("response", response.data);
-    
     return response.data;
   } catch (error) {
     throw new Error("Erreur lors de la récupération des étudiants.");
+  }
+};
+
+// Récupérer les étudiants archivés
+export const getArchivedStudents = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/archived`);
+    return response.data;
+  } catch (error) {
+    throw new Error("Erreur lors de la récupération des étudiants archivés.");
   }
 };
 
@@ -52,6 +61,16 @@ export const deleteStudent = async (id) => {
     return response.data;
   } catch (error) {
     throw new Error("Erreur lors de la suppression de l'étudiant.");
+  }
+};
+
+// Archiver un étudiant
+export const archiveStudent = async (id) => {
+  try {
+    const response = await axios.put(`${API_URL}/${id}/archive`);
+    return response.data;
+  } catch (error) {
+    throw new Error("Erreur lors de l'archivage de l'étudiant.");
   }
 };
 
