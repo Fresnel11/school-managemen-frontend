@@ -5,7 +5,7 @@ const API_URL = "http://localhost:5000/api";
 // Configurer l'intercepteur pour ajouter le token à chaque requête
 axios.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -26,10 +26,21 @@ export const registerSchool = async (schoolData, adminData) => {
     }
 };
 
+export const getUserInfo = async (token) => {
+  const res = await axios.get(`${API_URL}/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return res.data; // { id, name, email, ... }
+};
+
 // Nouvelle fonction de connexion
 export const login = async (email, password) => {
     try {
       const response = await axios.post(`${API_URL}/login`, { email, password });
+      const token = response.data.token;
+      localStorage.setItem("token", token);
       return response.data;
     } catch (error) {
       throw error.response?.data || { message: "Une erreur est survenue" };

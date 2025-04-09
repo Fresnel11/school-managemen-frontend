@@ -10,7 +10,6 @@ import {
   CardTitle,
   CardDescription,
 } from "../components/ui/card";
-import { login } from "../services/authServices";
 import { useAuth } from "../context/AuthContext"; 
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -47,7 +46,7 @@ export const LoginForm: React.FC = () => {
 
     try {
       await login(formData.email, formData.password);
-      
+      navigate("/dashboard"); 
     } catch (error: any) {
       setStatus("error");
       setMessage(error.message || "Erreur lors de la connexion.");
