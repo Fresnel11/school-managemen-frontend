@@ -16,17 +16,19 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AddStudentModal } from "./AddStudentModal";
 import { DeleteStudentModal } from "./DeleteStudentModal";
 import { ArchiveStudentModal } from "./ArchiveStudentModal";
-import { NotificationProvider, Notification, useNotification } from "../components/ui/Notification"; // Import des notifications
+import { EditStudentModal } from "./EditStudentModal"; 
+import { NotificationProvider, Notification, useNotification } from "../components/ui/Notification";
 
 export function Students() {
   const [students, setStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false); // État pour le modal de modification
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
-  const { notifications, addNotification, removeNotification } = useNotification(); // Utilisation du hook
+  const { notifications, addNotification, removeNotification } = useNotification();
 
   const fetchStudents = async () => {
     try {
@@ -88,6 +90,11 @@ export function Students() {
     }
   };
 
+  const handleStudentUpdated = async (updatedStudent: any) => {
+    await fetchStudents();
+    addNotification(`Étudiant ${updatedStudent.firstName} ${updatedStudent.lastName} mis à jour avec succès`, "success");
+  };
+
   const renderActions = (row: any) => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -109,7 +116,8 @@ export function Students() {
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => {
-            console.log("Edit student:", row);
+            setSelectedStudent(row);
+            setIsEditModalOpen(true); // Ouvre le modal de modification
           }}
           className="cursor-pointer"
         >
@@ -212,6 +220,18 @@ export function Students() {
         />
 
         {selectedStudent && (
+          <EditStudentModal
+            isOpen={isEditModalOpen}
+            onClose={() => {
+              setIsEditModalOpen(false);
+              setSelectedStudent(null);
+            }}
+            onStudentUpdated={handleStudentUpdated}
+            student={selectedStudent}
+          />
+        )}
+
+        {selectedStudent && (
           <DeleteStudentModal
             isOpen={isDeleteModalOpen}
             onClose={() => {
@@ -235,7 +255,6 @@ export function Students() {
           />
         )}
 
-        {/* Rendu des notifications */}
         {notifications.map((notif) => (
           <Notification
             key={notif.id}
