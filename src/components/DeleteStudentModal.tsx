@@ -26,7 +26,14 @@ export function DeleteStudentModal({
       isOpen={isOpen}
       onClose={onClose}
       onSubmit={handleSubmit}
-      title="Confirmer la suppression"
+      title={
+        <div className="flex items-center space-x-2">
+          <div className="flex items-center justify-center w-[70px] h-[70px] bg-red-100 rounded-full">
+            <Trash className="text-red-600" size={35} />
+          </div>
+          <span>Confirmer la suppression</span>
+        </div>
+      }
       fields={fields}
       size="sm"
       submitButtonText="Supprimer"

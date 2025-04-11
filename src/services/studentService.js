@@ -98,3 +98,12 @@ export const getStudentInscriptions = async (id) => {
     throw new Error("Erreur lors de la récupération de l'historique des inscriptions.");
   }
 };
+
+export const getStudentStats = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/stats`);
+    return response.data;
+  } catch (error) {
+    throw new Error("Erreur lors de la récupération des statistiques des étudiants.", error);
+  }
+};

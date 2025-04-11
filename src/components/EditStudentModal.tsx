@@ -149,6 +149,8 @@ export function EditStudentModal({ isOpen, onClose, onStudentUpdated, student }:
       { value: "graduated", label: "Gradué(e)" },
       { value: "transferred", label: "Transféré(e)" },
       { value: "excluded", label: "Exclu(e)" },
+      { value: "to be watched", label: "À surveiller" },
+      { value: "in difficulty", label: "En difficulté" },
     ], required: true },
   ];
 
@@ -163,6 +165,7 @@ export function EditStudentModal({ isOpen, onClose, onStudentUpdated, student }:
       { value: "Père", label: "Père" },
       { value: "Mère", label: "Mère" },
       { value: "Tuteur", label: "Tuteur" },
+      { value: "Tutrice", label: "Tutrice" },
     ], required: true },
   ];
 

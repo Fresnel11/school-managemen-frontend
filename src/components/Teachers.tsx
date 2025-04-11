@@ -84,9 +84,9 @@ export function Teachers() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Teachers</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Enseignants</h1>
         <p className="text-muted-foreground">
-          Manage and view all teacher information.
+        Gérez et visualisez toutes les informations sur les enseignants.
         </p>
       </div>
 
