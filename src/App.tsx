@@ -10,6 +10,7 @@ import { Students } from "./components/Students";
 import { Teachers } from "./components/Teachers";
 import { Parents } from "./components/Parents";
 import { Settings } from "./components/Setting";
+import { Classrooms } from "./components/Classrooms";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 
 // Composant Home
@@ -100,6 +101,14 @@ const App: React.FC = () => {
               element={
                 <ProtectedLayout>
                   <Settings />
+                </ProtectedLayout>
+              }
+            />
+            <Route
+              path="/classrooms"
+              element={
+                <ProtectedLayout>
+                  <Classrooms/>
                 </ProtectedLayout>
               }
             />

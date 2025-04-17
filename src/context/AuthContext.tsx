@@ -3,10 +3,13 @@ import { login as loginService, getUserInfo } from "../services/authServices"; /
 
 
 interface User {
-    id: string;
-    name: string;
-    email: string;
-  }
+  token: string;
+  name?: string; // Optionnel, selon ce que ton backend renvoie
+  school?: {
+    _id: string;
+    name?: string; // Optionnel
+  };
+}
 // Définir le type du contexte
 interface AuthContextType {
   isAuthenticated: boolean;
