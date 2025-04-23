@@ -10,9 +10,14 @@ const getAuthHeaders = (token) => ({
 });
 
 // Créer une classe
-export const createClassroom = async (data, token) => {
-  const response = await axios.post(`${API_URL}`, data, getAuthHeaders(token));
-  return response.data;
+export const createClassroom = async (classroomData) => {
+  try {
+    const response = await axios.post(`${API_URL}`, classroomData);
+    return response.data;
+  } catch (error) {
+    throw new Error("Erreur lors de la création de la classe.");
+  }
+  
 };
 
 // Mettre à jour une classe

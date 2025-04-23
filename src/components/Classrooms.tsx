@@ -20,19 +20,28 @@ import {
   getAllClassrooms,
   deleteClassroom,
 } from "../services/classroomServices"; // Importer le service
-import { toast } from "react-hot-toast"; // Optionnel : pour les notifications
 
+// Définir l'interface Classroom avec tous les champs possibles
 interface Classroom {
   _id: string;
   name: string;
   level: string;
   capacity: number;
-  description: string;
+  description?: string; // Optionnel
+  school: string; // Ajouté pour correspondre au modèle côté back-end
   createdAt: string;
 }
 
+// Définir l'interface pour les données soumises via le formulaire
+interface ClassroomFormData {
+  name: string;
+  level: string;
+  capacity: string | number; // Peut être une chaîne dans le formulaire, converti en nombre
+  description?: string;
+}
+
 export function Classrooms() {
-  const { user } = useAuth(); // Récupérer l'utilisateur pour le token
+  const { user } = useAuth(); // Récupérer l'utilisateur pour le token et les infos
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -43,53 +52,66 @@ export function Classrooms() {
 
   // Récupérer les classes lors du montage du composant
   useEffect(() => {
- 
     const fetchClassrooms = async () => {
+      if (!user || !user.token) {
+        
+        return;
+      }
+
       try {
         setLoading(true);
-        const response = await getAllClassrooms();
+        const response = await getAllClassrooms(user.token); // Passer le token à getAllClassrooms
         setClassrooms(response);
       } catch (error: any) {
         console.error("Erreur lors de la récupération des classes :", error);
-        toast.error("Erreur lors de la récupération des classes.");
+        
       } finally {
         setLoading(false);
       }
     };
     fetchClassrooms();
-  }, []);
+  }, [user]); // Dépendance sur user pour recharger si l'utilisateur change
 
   // Créer une nouvelle classe
-  const handleCreateClassroom = async (data: Record<string, any>) => {
+  const handleCreateClassroom = async (data: ClassroomFormData) => {
+    console.log("User object:", user);
+
+    // Vérifier que l'utilisateur est connecté et a une école associée
     if (!user || !user.school || !user.school._id) {
-      toast.error("Erreur : Utilisateur non connecté ou aucune école associée.");
+      console.error("Erreur : Utilisateur non connecté ou aucune école associée.");
+      
       return;
     }
+
     try {
       const classroomData = {
         ...data,
-        capacity: Number(data.capacity),
-        school: user.school._id,
+        capacity: Number(data.capacity), // Convertir en nombre
+        school: user.school._id, // Utiliser user.school._id directement
       };
       const response = await createClassroom(classroomData, user.token);
       setClassrooms([...classrooms, response.classroom]);
       setIsAddModalOpen(false);
-      toast.success("Classe créée avec succès !");
+      
     } catch (error: any) {
       console.error("Erreur lors de la création de la classe :", error);
-      toast.error(error.response?.data?.message || "Erreur lors de la création de la classe.");
+      
     }
   };
 
   // Modifier une classe existante
-  const handleUpdateClassroom = async (data: Record<string, any>) => {
-    if (!selectedClassroom) return;
+  const handleUpdateClassroom = async (data: ClassroomFormData) => {
+    if (!selectedClassroom || !user || !user.token) {
+      
+      return;
+    }
+
     try {
       const updatedData = {
         ...data,
         capacity: Number(data.capacity), // S'assurer que capacity est un nombre
       };
-      const response = await updateClassroom(selectedClassroom._id, updatedData);
+      const response = await updateClassroom(selectedClassroom._id, updatedData, user.token);
       setClassrooms(
         classrooms.map((cls) =>
           cls._id === selectedClassroom._id ? response.classroom : cls
@@ -97,25 +119,29 @@ export function Classrooms() {
       );
       setIsEditModalOpen(false);
       setSelectedClassroom(null);
-      toast.success("Classe mise à jour avec succès !");
+      
     } catch (error: any) {
       console.error("Erreur lors de la mise à jour de la classe :", error);
-      toast.error(error.response?.data?.message || "Erreur lors de la mise à jour de la classe.");
+      
     }
   };
 
   // Supprimer une classe
   const handleDeleteClassroom = async () => {
-    if (!selectedClassroom) return;
+    if (!selectedClassroom || !user || !user.token) {
+      
+      return;
+    }
+
     try {
-      await deleteClassroom(selectedClassroom._id);
+      await deleteClassroom(selectedClassroom._id, user.token);
       setClassrooms(classrooms.filter((cls) => cls._id !== selectedClassroom._id));
       setIsDeleteModalOpen(false);
       setSelectedClassroom(null);
-      toast.success("Classe supprimée avec succès !");
+      
     } catch (error: any) {
       console.error("Erreur lors de la suppression de la classe :", error);
-      toast.error(error.response?.data?.message || "Erreur lors de la suppression de la classe.");
+      
     }
   };
 
@@ -126,18 +152,18 @@ export function Classrooms() {
     sortableFields: ["name", "level", "capacity", "createdAt"],
     customRender: {
       createdAt: (row: Classroom) => <span>{new Date(row.createdAt).toLocaleDateString()}</span>,
-    level: (row: Classroom) => {
-      const levelMap: { [key: string]: string } = {
-        "6ème": "6ème",
-        "5ème": "5ème",
-        "4ème": "4ème",
-        "3ème": "3ème",
-        "2nd": "2nde",
-        "1ere": "1ère",
-        Terminal: "Terminale",
-      };
-      return <span>{levelMap[row.level] || row.level}</span>;
-    },
+      level: (row: Classroom) => {
+        const levelMap: { [key: string]: string } = {
+          "6ème": "6ème",
+          "5ème": "5ème",
+          "4ème": "4ème",
+          "3ème": "3ème",
+          "2nd": "2nde",
+          "1ere": "1ère",
+          Terminal: "Terminale",
+        };
+        return <span>{levelMap[row.level] || row.level}</span>;
+      },
     },
     customHeaders: {
       name: "Nom",
@@ -205,15 +231,15 @@ export function Classrooms() {
         <p>Chargement des classes...</p>
       ) : (
         <div className="overflow-x-auto rounded-xl backdrop-blur-sm bg-white/70 border border-gray-100 shadow-lg">
-        <DataTable
-          columns={columns}
-          data={classrooms}
-          searchPlaceholder="Rechercher une classe..."
-          searchColumn="name"
-          pageSize={10}
-          pageSizeOptions={[5, 10, 20, 50]}
-          showActions={true}
-        />
+          <DataTable
+            columns={columns}
+            data={classrooms}
+            searchPlaceholder="Rechercher une classe..."
+            searchColumn="name"
+            pageSize={10}
+            pageSizeOptions={[5, 10, 20, 50]}
+            showActions={true}
+          />
         </div>
       )}
 
@@ -249,11 +275,22 @@ export function Classrooms() {
       >
         {selectedClassroom && (
           <div className="space-y-4">
-            <p><strong>Nom :</strong> {selectedClassroom.name}</p>
-            <p><strong>Niveau :</strong> {selectedClassroom.level}</p>
-            <p><strong>Capacité :</strong> {selectedClassroom.capacity}</p>
-            <p><strong>Description :</strong> {selectedClassroom.description || "N/A"}</p>
-            <p><strong>Date de Création :</strong> {new Date(selectedClassroom.createdAt).toLocaleDateString()}</p>
+            <p>
+              <strong>Nom :</strong> {selectedClassroom.name}
+            </p>
+            <p>
+              <strong>Niveau :</strong> {selectedClassroom.level}
+            </p>
+            <p>
+              <strong>Capacité :</strong> {selectedClassroom.capacity}
+            </p>
+            <p>
+              <strong>Description :</strong> {selectedClassroom.description || "N/A"}
+            </p>
+            <p>
+              <strong>Date de Création :</strong>{" "}
+              {new Date(selectedClassroom.createdAt).toLocaleDateString()}
+            </p>
           </div>
         )}
       </Modal>
@@ -269,7 +306,10 @@ export function Classrooms() {
         title="Confirmer la Suppression"
         submitButtonText="Supprimer"
       >
-        <p>Êtes-vous sûr de vouloir supprimer la classe <strong>{selectedClassroom?.name}</strong> ?</p>
+        <p>
+          Êtes-vous sûr de vouloir supprimer la classe{" "}
+          <strong>{selectedClassroom?.name}</strong> ?
+        </p>
       </Modal>
     </div>
   );
