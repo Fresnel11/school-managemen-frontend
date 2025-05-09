@@ -1,37 +1,35 @@
 import React from "react";
 import { CheckIcon } from "lucide-react";
 import { motion } from "framer-motion";
+import { registrationForm } from "../../data/content";
 
 interface ProgressStepsProps {
   currentStep: number;
+  language: string;
 }
 
-export const ProgressSteps = ({ currentStep }: ProgressStepsProps) => {
+export const ProgressSteps = ({ currentStep, language }: ProgressStepsProps) => {
   const steps = [
-    { id: 1, name: "Informations de l'école" },
-    { id: 2, name: "Informations de l'administrateur" },
-    { id: 3, name: "Vérification et soumission" },
+    { id: 1, name: registrationForm.steps.schoolInfo[language] },
+    { id: 2, name: registrationForm.steps.adminInfo[language] },
+    { id: 3, name: registrationForm.steps.review[language] },
   ];
 
   return (
     <div className="relative p-8">
-      {/* Progress Line */}
       <div className="absolute inset-0 flex items-center px-4 mt-8" aria-hidden="true">
-        <div className="h-1 w-full bg-gray-100 rounded-full">
+        <div className="h-1 w-full bg-primary-200 rounded-full">
           <motion.div
-            className="h-full bg-black rounded-full"
+            className="h-full bg-primary-500 rounded-full"
             initial={{ width: "0%" }}
             animate={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
           />
         </div>
       </div>
-
-      {/* Steps */}
       <ul className="relative flex justify-between">
         {steps.map((step) => (
           <li key={step.id} className="flex flex-col items-center">
-            {/* Step Circle */}
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -44,10 +42,10 @@ export const ProgressSteps = ({ currentStep }: ProgressStepsProps) => {
                   border-4 transition-all duration-300
                   ${
                     step.id < currentStep
-                      ? "border-black bg-black text-white"
+                      ? "border-primary-500 bg-primary-500 text-white"
                       : step.id === currentStep
-                      ? "border-black bg-white text-black"
-                      : "border-gray-200 bg-white text-gray-400"
+                      ? "border-primary-500 bg-primary-50 text-primary-900 dark:bg-primary-900 dark:text-primary-100"
+                      : "border-primary-200 bg-primary-50 text-primary-400 dark:bg-primary-900 dark:text-primary-400"
                   }
                 `}
                 whileHover={{ scale: 1.1 }}
@@ -65,8 +63,6 @@ export const ProgressSteps = ({ currentStep }: ProgressStepsProps) => {
                   <span className="text-xl font-semibold">{step.id}</span>
                 )}
               </motion.div>
-
-              {/* Pulse Effect for Current Step */}
               {step.id === currentStep && (
                 <motion.div
                   className="absolute inset-0 rounded-full"
@@ -78,13 +74,11 @@ export const ProgressSteps = ({ currentStep }: ProgressStepsProps) => {
                     ease: "easeOut",
                   }}
                   style={{
-                    border: "2px solid black",
+                    border: "2px solid #0073ff",
                   }}
                 />
               )}
             </motion.div>
-
-            {/* Step Name */}
             <motion.span
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -94,8 +88,8 @@ export const ProgressSteps = ({ currentStep }: ProgressStepsProps) => {
                 transition-colors duration-300
                 ${
                   step.id <= currentStep
-                    ? "text-black"
-                    : "text-gray-400"
+                    ? "text-primary-900 dark:text-primary-100"
+                    : "text-primary-400 dark:text-primary-400"
                 }
               `}
             >
@@ -107,5 +101,3 @@ export const ProgressSteps = ({ currentStep }: ProgressStepsProps) => {
     </div>
   );
 };
-
-

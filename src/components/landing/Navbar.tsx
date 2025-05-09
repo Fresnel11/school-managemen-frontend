@@ -44,7 +44,7 @@ const Navbar: React.FC = () => {
               whileTap={{ scale: 0.95 }}
               className="flex-shrink-0"
             >
-              <span className="font-heading font-bold text-xl text-landingPrimary-600 dark:text-landingPrimary-400">
+              <span className="font-heading font-bold text-xl text-primary-600 dark:text-primary-400">
                 EduManage
               </span>
             </motion.div>
@@ -59,7 +59,7 @@ const Navbar: React.FC = () => {
                   href={item.href}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="font-medium text-gray-700 hover:text-landingPrimary-500 dark:text-gray-200 dark:hover:text-landingPrimary-400 px-3 py-2 rounded-md text-sm"
+                  className="font-medium text-gray-700 hover:text-primary-500 dark:text-gray-200 dark:hover:text-primary-400 px-3 py-2 rounded-md text-sm"
                 >
                   {item.label[language]}
                 </motion.a>
@@ -116,7 +116,7 @@ const Navbar: React.FC = () => {
               whileHover={{ scale: 1.05, backgroundColor: '#e6f1ff' }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleLanguage}
-              className="flex items-center space-x-1 px-3 py-1.5 rounded-full border border-landingPrimary-200 bg-landingPrimary-50 text-landingPrimary-700 hover:bg-landingPrimary-100 dark:bg-landingPrimary-900 dark:text-landingPrimary-200 dark:border-landingPrimary-700 dark:hover:bg-landingPrimary-800 transition-all duration-200"
+              className="flex items-center space-x-1 px-3 py-1.5 rounded-full border border-primary-200 bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900 dark:text-primary-200 dark:border-primary-700 dark:hover:bg-primary-800 transition-all duration-200"
               aria-label="Toggle language"
             >
               <Globe size={18} />
@@ -127,7 +127,7 @@ const Navbar: React.FC = () => {
               whileHover={{ scale: 1.05, backgroundColor: '#e6f1ff' }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleTheme}
-              className="p-2 rounded-full border border-landingPrimary-200 bg-landingPrimary-50 text-landingPrimary-700 hover:bg-landingPrimary-100 dark:bg-landingPrimary-900 dark:text-landingPrimary-200 dark:border-landingPrimary-700 dark:hover:bg-landingPrimary-800 transition-all duration-200"
+              className="p-2 rounded-full border border-primary-200 bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900 dark:text-primary-200 dark:border-primary-700 dark:hover:bg-primary-800 transition-all duration-200"
               aria-label="Toggle theme"
             >
               {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
@@ -160,7 +160,7 @@ const Navbar: React.FC = () => {
               <a
                 key={item.id}
                 href={item.href}
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-landingPrimary-500 hover:bg-gray-100 dark:text-gray-200 dark:hover:text-landingPrimary-400 dark:hover:bg-gray-800"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary-500 hover:bg-gray-100 dark:text-gray-200 dark:hover:text-primary-400 dark:hover:bg-gray-800"
                 onClick={handleMobileMenuToggle}
               >
                 {item.label[language]}
@@ -168,7 +168,7 @@ const Navbar: React.FC = () => {
             ))}
             <Link to="/login">
               <div
-                className="block w-full text-center mt-2 px-4 py-2 rounded-md text-base font-medium bg-landingPrimary-500 hover:bg-landingPrimary-600 dark:bg-landingPrimary-600 dark:hover:bg-landingPrimary-700 text-white"
+                className="block w-full text-center mt-2 px-4 py-2 rounded-md text-base font-medium bg-primary-500 hover:bg-primary-600 dark:bg-primary-600 dark:hover:bg-primary-700 text-white"
                 onClick={handleMobileMenuToggle}
               >
                 {language === 'en' ? 'Login' : 'Connexion'}
@@ -176,7 +176,7 @@ const Navbar: React.FC = () => {
             </Link>
             <Link to="/register">
               <div
-                className="block w-full text-center mt-2 px-4 py-2 rounded-md text-base font-medium bg-landingAccent-500 hover:bg-landingAccent-600 dark:bg-landingAccent-600 dark:hover:bg-landingAccent-700 text-white"
+                className="block w-full text-center mt-2 px-4 py-2 rounded-md text-base font-medium bg-accent-500 hover:bg-accent-600 dark:bg-accent-600 dark:hover:bg-accent-700 text-white"
                 onClick={handleMobileMenuToggle}
               >
                 {language === 'en' ? 'Sign Up' : 'Inscription'}

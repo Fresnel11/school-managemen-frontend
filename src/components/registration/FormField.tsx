@@ -10,7 +10,7 @@ interface FormFieldProps {
 export const FormField = ({ label, children, error }: FormFieldProps) => {
   return (
     <div className="space-y-2">
-      <Label>{label}</Label>
+      <Label className="text-primary-900 dark:text-primary-100">{label}</Label>
       {children}
       {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
