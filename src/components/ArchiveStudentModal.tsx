@@ -26,7 +26,14 @@ export function ArchiveStudentModal({
       isOpen={isOpen}
       onClose={onClose}
       onSubmit={handleSubmit}
-      title="Confirmer l'archivage"
+      title={
+        <div className="flex items-center space-x-2">
+          <div className="flex items-center justify-center w-[70px] h-[70px] bg-yellow-100 rounded-full">
+            <Archive className="text-yellow-600" size={35} />
+          </div>
+          <span>Confirmer l'archivage</span>
+        </div>
+      }
       fields={fields}
       size="sm"
       submitButtonText="Archiver"

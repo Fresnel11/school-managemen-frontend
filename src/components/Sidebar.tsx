@@ -5,6 +5,7 @@ import {
   Users, 
   GraduationCap, 
   UserRound, 
+  BookOpen, // Icône pour "Classrooms"
   Settings as SettingsIcon, 
   X,
   LogOut,
@@ -47,6 +48,7 @@ export function Sidebar({
         { id: "students", label: "Students", icon: GraduationCap, path: "/students" },
         { id: "teachers", label: "Teachers", icon: UserRound, path: "/teachers" },
         { id: "parents", label: "Parents", icon: Users, path: "/parents" },
+        { id: "classrooms", label: "Classrooms", icon: BookOpen, path: "/classrooms" }, // Nouvel élément "Classrooms"
       ],
     },
   ];
@@ -120,7 +122,7 @@ export function Sidebar({
                 )}
               </div>
 
-              {/* Sous-menus (Students, Teachers, Parents) */}
+              {/* Sous-menus (Students, Teachers, Parents, Classrooms) */}
               {item.subItems && (
                 <div
                   className={cn(

@@ -16,17 +16,23 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AddStudentModal } from "./AddStudentModal";
 import { DeleteStudentModal } from "./DeleteStudentModal";
 import { ArchiveStudentModal } from "./ArchiveStudentModal";
-import { NotificationProvider, Notification, useNotification } from "../components/ui/Notification"; // Import des notifications
+import { EditStudentModal } from "./EditStudentModal";
+import { ViewStudentDetailsModal } from "./ViewStudentDetailsModal";
+import { StudentStats } from "./StudentStats";
+import { NotificationProvider, Notification, useNotification } from "../components/ui/Notification";
 
 export function Students() {
   const [students, setStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
-  const { notifications, addNotification, removeNotification } = useNotification(); // Utilisation du hook
+  const [statsRefreshTrigger, setStatsRefreshTrigger] = useState(0);
+  const { notifications, addNotification, removeNotification } = useNotification();
 
   const fetchStudents = async () => {
     try {
@@ -53,8 +59,14 @@ export function Students() {
       transferred: { color: "text-orange-700", bg: "bg-orange-100", label: "Transféré(e)" },
       excluded: { color: "text-red-700", bg: "bg-red-100", label: "Exclu(e)" },
       archived: { color: "text-gray-700", bg: "bg-gray-100", label: "Archivé(e)" },
+      tobewatched: { color: "text-yellow-700", bg: "bg-yellow-100", label: "À surveiller" },
+      indifficulty: { color: "text-red-700", bg: "bg-red-100", label: "En difficulté" },
     };
-    const style = statusMap[row.status?.toLowerCase()] || { color: "text-gray-700", bg: "bg-gray-100", label: "N/A" };
+
+    // Normalisation du statut pour gérer les différences de casse et les espaces
+    const normalizedStatus = row.status?.toLowerCase().replace(/\s/g, "");
+    const style = statusMap[normalizedStatus] || { color: "text-gray-700", bg: "bg-gray-100", label: "N/A" };
+
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${style.color} ${style.bg}`}>
         {style.label}
@@ -69,6 +81,7 @@ export function Students() {
       setStudents(students.filter((student) => student._id !== selectedStudent._id));
       addNotification(`Étudiant ${selectedStudent.firstName} ${selectedStudent.lastName} supprimé avec succès`, "success");
       setSelectedStudent(null);
+      setStatsRefreshTrigger((prev) => prev + 1);
     } catch (err: any) {
       setError("Erreur lors de la suppression de l'étudiant.");
       addNotification("Erreur lors de la suppression de l'étudiant", "error");
@@ -82,10 +95,23 @@ export function Students() {
       await fetchStudents();
       addNotification(`Étudiant ${selectedStudent.firstName} ${selectedStudent.lastName} archivé avec succès`, "success");
       setSelectedStudent(null);
+      setStatsRefreshTrigger((prev) => prev + 1);
     } catch (err: any) {
       setError("Erreur lors de l'archivage de l'étudiant.");
       addNotification("Erreur lors de l'archivage de l'étudiant", "error");
     }
+  };
+
+  const handleStudentUpdated = async (updatedStudent: any) => {
+    await fetchStudents();
+    addNotification(`Étudiant ${updatedStudent.firstName} ${updatedStudent.lastName} mis à jour avec succès`, "success");
+    setStatsRefreshTrigger((prev) => prev + 1);
+  };
+
+  const handleStudentAdded = async (student: any) => {
+    await fetchStudents();
+    addNotification(`Étudiant ${student.firstName} ${student.lastName} ajouté avec succès`, "success");
+    setStatsRefreshTrigger((prev) => prev + 1);
   };
 
   const renderActions = (row: any) => (
@@ -100,7 +126,8 @@ export function Students() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => {
-            console.log("View student:", row);
+            setSelectedStudent(row);
+            setIsViewModalOpen(true);
           }}
           className="cursor-pointer"
         >
@@ -109,7 +136,8 @@ export function Students() {
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => {
-            console.log("Edit student:", row);
+            setSelectedStudent(row);
+            setIsEditModalOpen(true);
           }}
           className="cursor-pointer"
         >
@@ -167,31 +195,35 @@ export function Students() {
     },
   });
 
-  const handleStudentAdded = async (student: any) => {
-    await fetchStudents();
-    addNotification(`Étudiant ${student.firstName} ${student.lastName} ajouté avec succès`, "success");
-  };
-
   return (
     <NotificationProvider>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Students</h1>
-          <p className="text-muted-foreground">
-            Manage and view all student information.
-          </p>
-        </div>
-
-        <div className="flex justify-end">
-          <Button size="sm" className="h-9" onClick={() => setIsAddModalOpen(true)}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {/* Titre et description */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Étudiants</h1>
+            <p className="text-muted-foreground text-sm sm:text-base">
+              Gérez et visualisez toutes les informations des étudiants.
+            </p>
+          </div>
+          <Button
+            size="sm"
+            className="h-9 w-full sm:w-auto"
+            onClick={() => setIsAddModalOpen(true)}
+          >
             Add Student
           </Button>
         </div>
 
+        {/* Statistiques */}
+        <StudentStats refreshTrigger={statsRefreshTrigger} />
+
+        {/* Messages de chargement et d'erreur */}
         {loading && <p className="text-center text-gray-500">Chargement des étudiants...</p>}
         {error && <p className="text-center text-red-500">{error}</p>}
 
-        <div className="rounded-xl overflow-hidden backdrop-blur-sm bg-white/70 border border-gray-100 shadow-lg">
+        {/* Tableau */}
+        <div className="overflow-x-auto rounded-xl backdrop-blur-sm bg-white/70 border border-gray-100 shadow-lg">
           {!loading && !error && (
             <DataTable
               columns={columns}
@@ -205,11 +237,24 @@ export function Students() {
           )}
         </div>
 
+        {/* Modals */}
         <AddStudentModal
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
           onStudentAdded={handleStudentAdded}
         />
+
+        {selectedStudent && (
+          <EditStudentModal
+            isOpen={isEditModalOpen}
+            onClose={() => {
+              setIsEditModalOpen(false);
+              setSelectedStudent(null);
+            }}
+            onStudentUpdated={handleStudentUpdated}
+            student={selectedStudent}
+          />
+        )}
 
         {selectedStudent && (
           <DeleteStudentModal
@@ -235,7 +280,18 @@ export function Students() {
           />
         )}
 
-        {/* Rendu des notifications */}
+        {selectedStudent && (
+          <ViewStudentDetailsModal
+            isOpen={isViewModalOpen}
+            onClose={() => {
+              setIsViewModalOpen(false);
+              setSelectedStudent(null);
+            }}
+            student={selectedStudent}
+          />
+        )}
+
+        {/* Notifications */}
         {notifications.map((notif) => (
           <Notification
             key={notif.id}

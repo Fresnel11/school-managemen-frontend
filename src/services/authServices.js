@@ -32,7 +32,8 @@ export const getUserInfo = async (token) => {
       Authorization: `Bearer ${token}`,
     },
   });
-  return res.data; // { id, name, email, ... }
+  console.log("Réponse de getUserInfo:", res.data); 
+  return res.data;
 };
 
 // Nouvelle fonction de connexion
@@ -41,6 +42,7 @@ export const login = async (email, password) => {
       const response = await axios.post(`${API_URL}/login`, { email, password });
       const token = response.data.token;
       localStorage.setItem("token", token);
+      console.log("Réponse de loginService:", response.data); // Ajoute ce log
       return response.data;
     } catch (error) {
       throw error.response?.data || { message: "Une erreur est survenue" };

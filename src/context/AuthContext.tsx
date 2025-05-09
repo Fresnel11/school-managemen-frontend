@@ -1,13 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { login as loginService, getUserInfo } from "../services/authServices"; // Importer votre service
-
+import { login as loginService, getUserInfo } from "../services/authServices";
 
 interface User {
-    id: string;
-    name: string;
-    email: string;
-  }
-// Définir le type du contexte
+  token: string;
+  name?: string;
+  email?: string;
+  school?: {
+    _id: string;
+    name?: string;
+  };
+}
+
 interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -16,12 +19,8 @@ interface AuthContextType {
   user: User | null;
 }
 
-
-
-// Créer le contexte
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Hook personnalisé pour utiliser le contexte
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -30,7 +29,6 @@ export const useAuth = () => {
   return context;
 };
 
-// Fournisseur du contexte
 interface AuthProviderProps {
   children: ReactNode;
 }
@@ -40,58 +38,66 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
 
-  // Vérifier si un token est présent dans localStorage au chargement
+  // Charger les données depuis localStorage au démarrage
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
-    if (storedToken) {
+    const storedUser = localStorage.getItem("user");
+    console.log("Stored token:", storedToken);
+    console.log("Stored user:", storedUser ? JSON.parse(storedUser) : null);
+    if (storedToken && storedUser) {
       setToken(storedToken);
+      setUser(JSON.parse(storedUser));
       setIsAuthenticated(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      const storedToken = localStorage.getItem("token");
-      if (storedToken) {
+    } else if (storedToken) {
+      const fetchUserInfo = async () => {
         try {
-          setToken(storedToken);
+          console.log("Appel de getUserInfo avec token:", storedToken);
           const userData = await getUserInfo(storedToken);
-          setUser(userData.user);
+          console.log("Données reçues de getUserInfo:", userData);
+          setUser({ ...userData.user, token: storedToken });
+          localStorage.setItem("user", JSON.stringify({ ...userData.user, token: storedToken }));
+          setToken(storedToken);
           setIsAuthenticated(true);
         } catch (err) {
-          console.error("Erreur lors de la récupération des infos user :", err);
-          logout(); // Token expiré ou invalide → déconnexion
+          console.error("Erreur lors de la récupération des infos user:", err);
+          logout();
         }
-      }
-    };
-  
-    fetchUserInfo();
+      };
+      fetchUserInfo();
+    }
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await loginService(email, password); // Appeler votre service
-      const { token } = response;
-      localStorage.setItem("token", token); // Stocker le token
+      const response = await loginService(email, password);
+      console.log("Réponse de loginService:", response);
+      const { token, user: userData } = response;
+      console.log("Données utilisateur pour setUser:", userData);
+      const userWithToken = { ...userData, token };
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(userWithToken));
       setToken(token);
-      const userData = await getUserInfo(token);
-      setUser(userData.user);;
+      setUser(userWithToken);
       setIsAuthenticated(true);
     } catch (error) {
-      throw error; // Laisser le composant appelant gérer l'erreur
+      console.error("Erreur lors de la connexion:", error);
+      throw error;
     }
   };
 
-  useEffect(() => {
-    console.log("user", user);
-    
-  });
-
   const logout = () => {
-    localStorage.removeItem("token"); // Supprimer le token
+    console.log("Déconnexion - Suppression de localStorage");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setToken(null);
+    setUser(null);
     setIsAuthenticated(false);
   };
+
+  // Log pour déboguer les changements de user
+  useEffect(() => {
+    console.log("État actuel de user:", user);
+  }, [user]);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, login, logout, token, user }}>
