@@ -1,37 +1,31 @@
 import React from "react";
 import { CheckIcon } from "lucide-react";
 import { motion } from "framer-motion";
+import { useLanguage } from "../../context/LanguageContext";
+import { progressSteps } from "../../data/content";
 
 interface ProgressStepsProps {
   currentStep: number;
 }
 
 export const ProgressSteps = ({ currentStep }: ProgressStepsProps) => {
-  const steps = [
-    { id: 1, name: "Informations de l'école" },
-    { id: 2, name: "Informations de l'administrateur" },
-    { id: 3, name: "Vérification et soumission" },
-  ];
+  const { language } = useLanguage();
 
   return (
     <div className="relative p-8">
-      {/* Progress Line */}
       <div className="absolute inset-0 flex items-center px-4 mt-8" aria-hidden="true">
-        <div className="h-1 w-full bg-gray-100 rounded-full">
+        <div className="h-1 w-full bg-landingPrimary-200 dark:bg-landingPrimary-700 rounded-full">
           <motion.div
-            className="h-full bg-black rounded-full"
+            className="h-full bg-landingPrimary-500 dark:bg-landingPrimary-400 rounded-full"
             initial={{ width: "0%" }}
-            animate={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
+            animate={{ width: `${((currentStep - 1) / (progressSteps.steps.length - 1)) * 100}%` }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
           />
         </div>
       </div>
-
-      {/* Steps */}
       <ul className="relative flex justify-between">
-        {steps.map((step) => (
+        {progressSteps.steps.map((step) => (
           <li key={step.id} className="flex flex-col items-center">
-            {/* Step Circle */}
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -44,10 +38,10 @@ export const ProgressSteps = ({ currentStep }: ProgressStepsProps) => {
                   border-4 transition-all duration-300
                   ${
                     step.id < currentStep
-                      ? "border-black bg-black text-white"
+                      ? "border-landingPrimary-500 bg-landingPrimary-500 text-white dark:border-landingPrimary-400 dark:bg-landingPrimary-400"
                       : step.id === currentStep
-                      ? "border-black bg-white text-black"
-                      : "border-gray-200 bg-white text-gray-400"
+                      ? "border-landingPrimary-500 bg-white text-landingPrimary-500 dark:border-landingPrimary-400 dark:bg-gray-900 dark:text-landingPrimary-200"
+                      : "border-landingPrimary-200 bg-white text-landingPrimary-400 dark:border-landingPrimary-700 dark:bg-gray-900 dark:text-landingPrimary-400"
                   }
                 `}
                 whileHover={{ scale: 1.1 }}
@@ -65,8 +59,6 @@ export const ProgressSteps = ({ currentStep }: ProgressStepsProps) => {
                   <span className="text-xl font-semibold">{step.id}</span>
                 )}
               </motion.div>
-
-              {/* Pulse Effect for Current Step */}
               {step.id === currentStep && (
                 <motion.div
                   className="absolute inset-0 rounded-full"
@@ -78,13 +70,11 @@ export const ProgressSteps = ({ currentStep }: ProgressStepsProps) => {
                     ease: "easeOut",
                   }}
                   style={{
-                    border: "2px solid black",
+                    border: "2px solid #338fff",
                   }}
                 />
               )}
             </motion.div>
-
-            {/* Step Name */}
             <motion.span
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -94,12 +84,12 @@ export const ProgressSteps = ({ currentStep }: ProgressStepsProps) => {
                 transition-colors duration-300
                 ${
                   step.id <= currentStep
-                    ? "text-black"
-                    : "text-gray-400"
+                    ? "text-landingPrimary-900 dark:text-landingPrimary-100"
+                    : "text-landingPrimary-400 dark:text-landingPrimary-400"
                 }
               `}
             >
-              {step.name}
+              {step.name[language]}
             </motion.span>
           </li>
         ))}
@@ -107,5 +97,3 @@ export const ProgressSteps = ({ currentStep }: ProgressStepsProps) => {
     </div>
   );
 };
-
-

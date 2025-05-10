@@ -9,6 +9,8 @@ import {
   SelectValue,
 } from "../ui/select";
 import { FormField } from "./FormField";
+import { useLanguage } from "../../context/LanguageContext";
+import { adminInfoForm } from "../../data/content";
 
 type AdminInfo = {
   fullName: string;
@@ -35,6 +37,7 @@ export const AdminInfoForm = ({
   onNext,
   onPrev,
 }: AdminInfoFormProps) => {
+  const { language } = useLanguage();
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,7 +49,7 @@ export const AdminInfoForm = ({
     if (!validTypes.includes(file.type)) {
       setErrors((prev) => ({
         ...prev,
-        profilePhoto: "Format de fichier non supporté",
+        profilePhoto: adminInfoForm.errors.profilePhoto[language],
       }));
       return;
     }
@@ -54,7 +57,7 @@ export const AdminInfoForm = ({
     if (file.size > 2 * 1024 * 1024) {
       setErrors((prev) => ({
         ...prev,
-        profilePhoto: "Taille maximale 2MB dépassée",
+        profilePhoto: adminInfoForm.errors.profilePhoto[language],
       }));
       return;
     }
@@ -67,49 +70,50 @@ export const AdminInfoForm = ({
     const newErrors: Record<string, string> = {};
 
     if (!adminInfo.fullName.trim()) {
-      newErrors.fullName = "Le nom complet est requis";
+      newErrors.fullName = adminInfoForm.errors.fullName[language];
     }
 
     if (!adminInfo.email.trim()) {
-      newErrors.email = "L'email est requis";
+      newErrors.email = adminInfoForm.errors.email[language];
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adminInfo.email)) {
-      newErrors.email = "Format d'email invalide";
+      newErrors.email = adminInfoForm.errors.email[language];
     }
 
     if (!adminInfo.dateOfBirth) {
-      newErrors.dateOfBirth = "La date de naissance est requise";
+      newErrors.dateOfBirth = adminInfoForm.errors.dateOfBirth[language];
     } else {
       const birthDate = new Date(adminInfo.dateOfBirth);
       const today = new Date();
       const age = today.getFullYear() - birthDate.getFullYear();
       if (age < 18) {
-        newErrors.dateOfBirth = "L'administrateur doit avoir au moins 18 ans";
+        newErrors.dateOfBirth = language === 'en'
+          ? "Admin must be at least 18 years old"
+          : "L'administrateur doit avoir au moins 18 ans";
       }
     }
 
     if (!adminInfo.gender) {
-      newErrors.gender = "Le genre est requis";
+      newErrors.gender = adminInfoForm.errors.gender[language];
     }
 
     if (!adminInfo.phone.trim()) {
-      newErrors.phone = "Le numéro de téléphone est requis";
+      newErrors.phone = adminInfoForm.errors.phone[language];
     } else if (!/^\d{8,15}$/.test(adminInfo.phone.replace(/\D/g, ""))) {
-      newErrors.phone = "Numéro de téléphone invalide";
+      newErrors.phone = adminInfoForm.errors.phone[language];
     }
 
     if (!adminInfo.address.trim()) {
-      newErrors.address = "L'adresse est requise";
+      newErrors.address = adminInfoForm.errors.address[language];
     }
 
     if (!adminInfo.password) {
-      newErrors.password = "Le mot de passe est requis";
+      newErrors.password = adminInfoForm.errors.password[language];
     } else if (adminInfo.password.length < 8) {
-      newErrors.password =
-        "Le mot de passe doit contenir au moins 8 caractères";
+      newErrors.password = adminInfoForm.errors.password[language];
     }
 
     if (adminInfo.password !== adminInfo.confirmPassword) {
-      newErrors.confirmPassword = "Les mots de passe ne correspondent pas";
+      newErrors.confirmPassword = adminInfoForm.errors.confirmPassword[language];
     }
 
     setErrors(newErrors);
@@ -124,110 +128,107 @@ export const AdminInfoForm = ({
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-medium">Informations de l'administrateur</h3>
-
-      <FormField label="Nom complet" error={errors.fullName}>
+      <h3 className="text-lg font-medium text-landingPrimary-900 dark:text-landingPrimary-100">
+        {adminInfoForm.title[language]}
+      </h3>
+      <FormField label={adminInfoForm.fields.fullName.label[language]} error={errors.fullName}>
         <Input
           value={adminInfo.fullName}
           onChange={(e) => onChange({ fullName: e.target.value })}
-          placeholder="Nom et prénom"
+          placeholder={adminInfoForm.fields.fullName.placeholder[language]}
+          className="bg-white dark:bg-gray-800 text-landingPrimary-900 dark:text-landingPrimary-100 border border-landingPrimary-300 dark:border-landingPrimary-700 rounded-lg focus:border-landingPrimary-400 focus:ring-0 placeholder-landingPrimary-500 dark:placeholder-landingPrimary-400"
         />
       </FormField>
-
-      <FormField label="Email" error={errors.email}>
+      <FormField label={adminInfoForm.fields.email.label[language]} error={errors.email}>
         <Input
           value={adminInfo.email}
           onChange={(e) => onChange({ email: e.target.value })}
-          placeholder="Email de l'administrateur"
+          placeholder={adminInfoForm.fields.email.placeholder[language]}
           type="email"
+          className="bg-white dark:bg-gray-800 text-landingPrimary-900 dark:text-landingPrimary-100 border border-landingPrimary-300 dark:border-landingPrimary-700 rounded-lg focus:border-landingPrimary-400 focus:ring-0 placeholder-landingPrimary-500 dark:placeholder-landingPrimary-400"
         />
       </FormField>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField label="Date de naissance" error={errors.dateOfBirth}>
+        <FormField label={adminInfoForm.fields.dateOfBirth.label[language]} error={errors.dateOfBirth}>
           <Input
             value={adminInfo.dateOfBirth}
             onChange={(e) => onChange({ dateOfBirth: e.target.value })}
             type="date"
+            className="bg-white dark:bg-gray-800 text-landingPrimary-900 dark:text-landingPrimary-100 border border-landingPrimary-300 dark:border-landingPrimary-700 rounded-lg focus:border-landingPrimary-400 focus:ring-0 placeholder-landingPrimary-500 dark:placeholder-landingPrimary-400"
           />
         </FormField>
-
-        <FormField label="Genre" error={errors.gender}>
+        <FormField label={adminInfoForm.fields.gender.label[language]} error={errors.gender}>
           <Select
             value={adminInfo.gender}
             onValueChange={(value) => onChange({ gender: value })}
           >
-            <SelectTrigger>
-              <SelectValue placeholder="Sélectionnez un genre" />
+            <SelectTrigger className="bg-white dark:bg-gray-800 text-landingPrimary-900 dark:text-landingPrimary-100 border border-landingPrimary-300 dark:border-landingPrimary-700 rounded-lg focus:border-landingPrimary-400 focus:ring-0">
+              <SelectValue placeholder={adminInfoForm.fields.gender.placeholder[language]} />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Homme">Homme</SelectItem>
-              <SelectItem value="Femme">Femme</SelectItem>
-              <SelectItem value="Autre">Autre</SelectItem>
+            <SelectContent className="bg-white dark:bg-gray-800 border-landingPrimary-300 dark:border-landingPrimary-700">
+              <SelectItem value="Homme">{language === 'en' ? "Male" : "Homme"}</SelectItem>
+              <SelectItem value="Femme">{language === 'en' ? "Female" : "Femme"}</SelectItem>
+              <SelectItem value="Autre">{language === 'en' ? "Other" : "Autre"}</SelectItem>
             </SelectContent>
           </Select>
         </FormField>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField label="Téléphone" error={errors.phone}>
+        <FormField label={adminInfoForm.fields.phone.label[language]} error={errors.phone}>
           <Input
             value={adminInfo.phone}
             onChange={(e) => onChange({ phone: e.target.value })}
-            placeholder="Numéro de téléphone"
+            placeholder={adminInfoForm.fields.phone.placeholder[language]}
             type="tel"
+            className="bg-white dark:bg-gray-800 text-landingPrimary-900 dark:text-landingPrimary-100 border border-landingPrimary-300 dark:border-landingPrimary-700 rounded-lg focus:border-landingPrimary-400 focus:ring-0 placeholder-landingPrimary-500 dark:placeholder-landingPrimary-400"
           />
         </FormField>
-
-        <FormField label="Adresse" error={errors.address}>
+        <FormField label={adminInfoForm.fields.address.label[language]} error={errors.address}>
           <Input
             value={adminInfo.address}
             onChange={(e) => onChange({ address: e.target.value })}
-            placeholder="Adresse de l'administrateur"
+            placeholder={adminInfoForm.fields.address.placeholder[language]}
+            className="bg-white dark:bg-gray-800 text-landingPrimary-900 dark:text-landingPrimary-100 border border-landingPrimary-300 dark:border-landingPrimary-700 rounded-lg focus:border-landingPrimary-400 focus:ring-0 placeholder-landingPrimary-500 dark:placeholder-landingPrimary-400"
           />
         </FormField>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField label="Mot de passe" error={errors.password}>
+        <FormField label={adminInfoForm.fields.password.label[language]} error={errors.password}>
           <Input
             value={adminInfo.password}
             onChange={(e) => onChange({ password: e.target.value })}
-            placeholder="Créez un mot de passe"
+            placeholder={adminInfoForm.fields.password.placeholder[language]}
             type="password"
+            className="bg-white dark:bg-gray-800 text-landingPrimary-900 dark:text-landingPrimary-100 border border-landingPrimary-300 dark:border-landingPrimary-700 rounded-lg focus:border-landingPrimary-400 focus:ring-0 placeholder-landingPrimary-500 dark:placeholder-landingPrimary-400"
           />
         </FormField>
-
         <FormField
-          label="Confirmer le mot de passe"
+          label={adminInfoForm.fields.confirmPassword.label[language]}
           error={errors.confirmPassword}
         >
           <Input
             value={adminInfo.confirmPassword}
             onChange={(e) => onChange({ confirmPassword: e.target.value })}
-            placeholder="Confirmez le mot de passe"
+            placeholder={adminInfoForm.fields.confirmPassword.placeholder[language]}
             type="password"
+            className="bg-white dark:bg-gray-800 text-landingPrimary-900 dark:text-landingPrimary-100 border border-landingPrimary-300 dark:border-landingPrimary-700 rounded-lg focus:border-landingPrimary-400 focus:ring-0 placeholder-landingPrimary-500 dark:placeholder-landingPrimary-400"
           />
         </FormField>
       </div>
-
-      {/* <FormField label="Photo de profil" error={errors.profilePhoto}>
-        <Input
-          type="file"
-          accept="image/png, image/webp, image/jpeg, image/jpg"
-          onChange={handleFileChange}
-          className="cursor-pointer"
-        />
-        <p className="text-xs text-gray-500 mt-1">
-          Format recommandé: JPG, PNG. Taille max: 2MB
-        </p>
-      </FormField> */}
-
-      <div className="flex justify-between mt-8 translate-y-[400%]">
-        <Button variant="outline" onClick={onPrev}>
-          Précédent
+      <div className="flex justify-between mt-8">
+        <Button
+          variant="outline"
+          onClick={onPrev}
+          className="border-landingPrimary-200 dark:border-landingPrimary-700 text-landingPrimary-700 dark:text-landingPrimary-200 bg-landingPrimary-50 dark:bg-landingPrimary-900 hover:bg-landingPrimary-100 dark:hover:bg-landingPrimary-800 transition-all duration-300"
+        >
+          {adminInfoForm.prevButton[language]}
         </Button>
-        <Button onClick={handleNext}>Suivant</Button>
+        <Button
+          onClick={handleNext}
+          className="bg-landingPrimary-500 text-white font-semibold py-2 px-6 rounded-lg hover:bg-landingPrimary-600 dark:bg-landingPrimary-600 dark:hover:bg-landingPrimary-700 transition-all duration-300"
+        >
+          {adminInfoForm.nextButton[language]}
+        </Button>
       </div>
     </div>
   );
